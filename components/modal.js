@@ -101,7 +101,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
     try {
       const aiAuthToken = process.env.NEXT_PUBLIC_AI_AUTH_TOKEN;
-      const response = await fetch(`http://localhost:5001/worksheet/api/generate/971944d1-31ea-4442-aea5-d71533ac3953`, {
+      const response = await fetch(`https://4e3f-117-247-176-19.ngrok-free.app/worksheet/api/generate/971944d1-31ea-4442-aea5-d71533ac3953`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
