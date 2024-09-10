@@ -102,7 +102,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     try {
       const aiAuthToken = process.env.NEXT_PUBLIC_AI_AUTH_TOKEN;
       console.log(process.env.NEXT_PUBLIC_BASE_URL,'base url')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/worksheet/api/generate/971944d1-31ea-4442-aea5-d71533ac3953`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/generate/971944d1-31ea-4442-aea5-d71533ac3953`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
