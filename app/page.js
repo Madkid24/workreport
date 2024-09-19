@@ -3,6 +3,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from 'react';
 import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWandSparkles, faBars} from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';
@@ -17,8 +18,19 @@ const LandingPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEditorVisible, setIsEditorVisible] = useState(false); 
   const [content, setContent] = useState("");
+  const [pdfDetails, setPdfDetails] = useState({ subject: '', grade: null });
+  const [questionsArray, setQuestionsArray] = useState(null);
   const contentRef = useRef(null);
   const [isEditorDisabled, setIsEditorDisabled] = useState(true);
+  const [history, setHistory] = useState(() => {
+  if (typeof window !== 'undefined') {
+    // Load history from localStorage on the client side
+    const savedHistory = localStorage.getItem('history');
+    return savedHistory ? JSON.parse(savedHistory) : [];
+  }
+  return []; // Return an empty array on the server side
+});
+  const [selectedFileIndex, setSelectedFileIndex] = useState(null); 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedDarkMode = localStorage.getItem('isDarkMode');
@@ -26,6 +38,9 @@ const LandingPage = () => {
     }
     return false; // Default value if localStorage is not available
   }); 
+  const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date))// New state for typing simulation
+
+  const limitedHistory = sortedHistory.slice(0, 5);
 
   const simulateTyping = useCallback((text, interval = 50) => {
     let index = 0;
@@ -36,7 +51,7 @@ const LandingPage = () => {
         index += 1;
         if (index > text.length) {
           clearInterval(typingInterval);
-          setIsEditorDisabled(false); // Enable editor after typing is done
+          setIsEditorDisabled(false); // Enable editor after typing is done //
           return newContent;
         }
         return newContent;
@@ -44,7 +59,7 @@ const LandingPage = () => {
     }, interval);
   }, []);
   
-
+  
   useEffect(() => {
     if (contentRef.current) {
       contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -66,6 +81,12 @@ const LandingPage = () => {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+  useEffect(() => {
+    if (history.length > 0) {
+      localStorage.setItem('history', JSON.stringify(history));
+      console.log('History updated:', history);
+    }
+  }, [history]);
 
   const toggleDarkMode = () => {
     const newDarkMode = !isDarkMode;
@@ -74,7 +95,7 @@ const LandingPage = () => {
     localStorage.setItem('isDarkMode', newDarkMode.toString());
 };
 
-const handleGenerate = useCallback((responseData) => {
+const handleGenerate = useCallback((responseData, subject, grade) => {
   setIsModalOpen(false); // Close the modal
   setIsEditorVisible(true); // Show the SunTextEditor
   setContent(''); // Reset content
@@ -104,86 +125,337 @@ const handleGenerate = useCallback((responseData) => {
 
   // Start typing effect with formatted content
   simulateTyping(formattedContent);
-}, [simulateTyping]);
-
-
+  setHistory(prevHistory => [...prevHistory, { date: new Date(), content: formattedContent, subject, grade }]);
+  }, [simulateTyping]);
+  const handleSelectFile = (selectedItem) => {
+    if (selectedItem) {
+      console.log('Selected Item:', selectedItem);
+      // Use an empty array if questionsArray is not present
+      const questionsArray = selectedItem.questionsArray ;
+      console.log('Questions Array:', questionsArray);
   
-  const downloadPDF = useCallback(async () => {
+      setContent(selectedItem.content); // Use content from the selected item
+      setQuestionsArray(questionsArray); // Set questionsArray
+  
+      setIsEditorVisible(true);
+      setIsEditorDisabled(false);
+    }
+  };
+  
+  
+  
+
+  const downloadPDF = useCallback(async (subject, grade, questionsArray) => {
     const doc = new jsPDF();
-    const logoSrc = '/logo.png'; // Adjust according to your dark mode logic
-    const response = await fetch(logoSrc);
-    const logoBlob = await response.blob();
+    const imageSrc = '/worksheettemplateheader.png';
+    const response = await fetch(imageSrc);
+    const imageBlob = await response.blob();
     const reader = new FileReader();
 
     reader.onload = () => {
-      const logoBase64 = reader.result;
-      const pageWidth = doc.internal.pageSize.width;
-      const pageHeight = doc.internal.pageSize.height;
-      const margin = 20;
-      const borderWidth = 1;
-      const cornerRadius = 8;
-      const borderColor = [0, 0, 0];
-      const shadowColor = [0, 0, 0];
-      const backgroundColor = '#ffffff';
+        const imageBase64 = reader.result;
+        const pageWidth = doc.internal.pageSize.width;
+        const pageHeight = doc.internal.pageSize.height;
+        const footerHeight = 10; // Height for the footer
 
-      const addBorderAndBackground = () => {
-        doc.setFillColor(backgroundColor);
-        doc.rect(margin, margin, pageWidth - margin * 2, pageHeight - margin * 2, 'F');
-        doc.setDrawColor(...shadowColor);
-        doc.setLineWidth(borderWidth + 2);
-        doc.roundedRect(margin - 3, margin - 3, pageWidth - margin * 2 + borderWidth + 6, pageHeight - margin * 2 + borderWidth + 6, cornerRadius, cornerRadius, 'S');
-        doc.setDrawColor(...borderColor);
-        doc.setLineWidth(borderWidth);
-        doc.roundedRect(margin, margin, pageWidth - margin * 2, pageHeight - margin * 2, cornerRadius, cornerRadius, 'S');
-      };
+        const generateUUID = () => {
+            return 'xxxxxxxx'.replace(/[x]/g, (c) => {
+                const r = Math.random() * 16 | 0;
+                return r.toString(16);
+            });
+        };
 
-      addBorderAndBackground();
-      const logoWidth = 50;
-      const logoHeight = 20;
-      const xPosition = (pageWidth - logoWidth) / 2;
-      const yPosition = margin + 10;
+        const uuid = generateUUID();
 
-      doc.addImage(logoBase64, 'PNG', xPosition, yPosition, logoWidth, logoHeight);
+        const addImageHeader = (title) => {
+            doc.addImage(imageBase64, 'PNG', 0, 0, pageWidth, 40); 
+            const xOffset = 80;
+            const titleY = 20;
+            const uuidY = 30;
+            const uuidoffset = 90;
 
-      const titleGap = 20;
-      doc.setFontSize(22);
-      doc.setFont("Roboto", "bold");
-      doc.setTextColor(84, 166, 248);
-      doc.text("GENERATED QUESTIONS", pageWidth / 2, yPosition + logoHeight + titleGap, { align: 'center' });
+            doc.setFontSize(30);
+            doc.setFont("Arial", "bold");
+            doc.setTextColor(255, 255, 255); 
+            doc.text(title, xOffset, titleY); 
+
+            const text = `WORKSHEET ID: ${uuid}`;
+            doc.setFontSize(12);
+            doc.setFont("Arial", "normal");
+            doc.setTextColor(255, 255, 255); 
+            doc.text(text, uuidoffset, uuidY);
+        };
+
+        const addFooter = (pageNum, totalPages) => {
+            const footerY = pageHeight - footerHeight;
+
+            doc.setFillColor(27, 50, 65); // Dark blue color
+            doc.rect(0, footerY, pageWidth, footerHeight, 'F');
+
+            doc.setFontSize(12);
+            doc.setFont("Arial", "normal");
+            doc.setTextColor(255, 255, 255);
+
+            const footerText = 'This worksheet is generated by CENTAi';
+            const dateText = new Date().toLocaleDateString();
+
+            doc.text(footerText, 10, footerY + 7); // Powered by text on the left
+            doc.text(dateText, pageWidth - 30, footerY + 7); // Date on the right
+        };
+
+        const addAdditionalInfo = (isFirstPage) => {
+            if (isFirstPage) {
+                const marginTop = 50;
+                const marginLeft = 10; 
+                const labelWidth = 60; 
+                const spacing = 20; 
+
+                doc.setFontSize(16);
+                doc.setFont("Arial", "bold");
+                doc.setTextColor(0, 0, 0);
+
+                doc.text('Student Name:', marginLeft, marginTop);
+                doc.text(`Grade: ${grade}`, marginLeft, marginTop + 10);  // Dynamic grade
+                doc.text(`Subject: ${subject}`, marginLeft + 1 * (labelWidth + spacing), marginTop + 10); // Dynamic subject
+
+                doc.setLineWidth(0.5);
+                doc.line(marginLeft, marginTop + 15, pageWidth - marginLeft, marginTop + 15);
+            }
+        };
+
+        const addTeacherSignature = () => {
+            const lineY = pageHeight - 25; // Position the horizontal line
+            doc.setLineWidth(0.5);
+            doc.line(10, lineY, pageWidth - 10, lineY); // Horizontal line
+
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text('Teacher Signature:', 10, lineY + 10); // Add "Teacher Signature:" text
+        };
+
+        const addSectionContent = (title, content, yOffset) => {
+            doc.setFontSize(14);
+            doc.setFont("Arial", "bold");
+            doc.setTextColor(0, 0, 0);
+            doc.text(title, 10, yOffset);
+
+            doc.setFontSize(14);
+            doc.setFont("Arial", "normal");
+            doc.setTextColor(0, 0, 0);
+
+            let y = yOffset + 8;
+            const lineHeight = 7;
+            const margin = 10;
+            const maxLineWidth = pageWidth - 2 * margin;
+
+            content.forEach(item => {
+                const textLines = doc.splitTextToSize(item, maxLineWidth);
+
+                textLines.forEach(textLine => {
+                    if (y + lineHeight > pageHeight - footerHeight - 20) { // Account for footer
+                        doc.addPage();
+                        addImageHeader("WORKSHEET");
+                        addAdditionalInfo(false); // Do not add additional info on new pages
+                        addTeacherSignature(); // Add the horizontal line and teacher signature
+                        y = 50; // Reset position for new page
+                    }
+                    doc.text(textLine, margin, y);
+                    y += lineHeight;
+                });
+            });
+
+            // Add a gap of one line after the section
+            y += lineHeight;
+
+            return y; // Return the next available y position
+        };
+
+        const extractQuestionsFromEditor = () => {
+            const editorContent = document.querySelector('.sun-editor-editable').innerText;
+            const lines = editorContent.split('\n');
+            const extractedQuestions = {};
+
+            lines.forEach(line => {
+                const match = line.match(/Question (\d+): (.+)/);
+                if (match) {
+                    const number = parseInt(match[1], 10);
+                    const text = match[2];
+                    extractedQuestions[number] = text;
+                }
+            });
+
+            return extractedQuestions;
+        };
+
+        const processQuestionsArray = (questionsArray) => {
+            const objectiveQuestions = [];
+            const matchQuestions = [];
+            const shortAnswerQuestions = [];
+
+            const editorQuestions = extractQuestionsFromEditor();
+
+            questionsArray.forEach(q => {
+                if (q.QuestionType === 'MCQ' || q.QuestionType === 'Fill in the blank') {
+                    if (editorQuestions[q.QuestionNumber]) {
+                        objectiveQuestions.push(`${q.QuestionNumber}. ${editorQuestions[q.QuestionNumber]}`);
+                    }
+                } else if (q.QuestionType === 'Match the following') {
+                    if (editorQuestions[q.QuestionNumber]) {
+                        matchQuestions.push(`${q.QuestionNumber}. ${editorQuestions[q.QuestionNumber]}`);
+                    }
+                } else if (q.QuestionType === 'Short answer') {
+                    if (editorQuestions[q.QuestionNumber]) {
+                        shortAnswerQuestions.push(`${q.QuestionNumber}. ${editorQuestions[q.QuestionNumber]}`);
+                    }
+                }
+            });
+
+            return { objectiveQuestions, matchQuestions, shortAnswerQuestions };
+        };
+
+        // Extract questions and answers
+        const { objectiveQuestions, matchQuestions, shortAnswerQuestions } = processQuestionsArray(questionsArray);
+
+        let isFirstPage = true;
+        addImageHeader("W O R K S H E E T");
+        addAdditionalInfo(isFirstPage);
+        addTeacherSignature(); // Add the horizontal line and teacher signature
+
+        let yOffset = 80; // Initial offset for content
+        yOffset = addSectionContent("OBJECTIVE QUESTIONS", objectiveQuestions, yOffset);
+        yOffset = addSectionContent("MATCH THE FOLLOWING QUESTIONS", matchQuestions, yOffset);
+        yOffset = addSectionContent("SHORT ANSWER QUESTIONS", shortAnswerQuestions, yOffset);
+
+        // Preserve the existing "ANSWERS" content and format it as needed
+        doc.addPage();
+      addImageHeader("A N S W E R S");
 
       const editorContent = document.querySelector('.sun-editor-editable').innerText;
-      const lineHeight = 6;
-      let y = yPosition + logoHeight + titleGap + 20;
-      let lines = doc.splitTextToSize(editorContent, pageWidth - margin * 2);
+      const lines = editorContent.split('\n');
+      const answers = [];
+      let currentAnswer = [];
+      let isAnswer = false;
+      let isMatchTheFollowing = false; // Flag for "Match the Following"
+      let matchQuestionIndices = []; // Array to track indices of questions with "Match the Following"
+      let tableRows = []; // Array to store rows for the current table
+      let currentY = 50; // Initial Y position for answers
 
-      doc.setFontSize(15);
-      doc.setFont("Arial", "normal");
-      doc.setTextColor(0, 0, 0);
+      // const pageWidth = doc.internal.pageSize.width;
+      const margin = 20;
+      const maxLineWidth = pageWidth - 2 * margin; // Calculate the maximum width for text lines
 
-      lines.forEach(line => {
-        if (y + lineHeight > pageHeight - margin) {
-          doc.addPage();
-          addBorderAndBackground();
-          y = margin + 20;
-        }
-        doc.text(line, margin + 10, y);
-        y += 5;
+      // Process each line to extract questions, answers, and "Match the Following" data
+      lines.forEach((line, index) => {
+          if (line.startsWith('Question')) {
+              // Push the current answer before starting a new question
+              if (currentAnswer.length > 0) {
+                  answers.push({ text: currentAnswer.join('\n').trim(), index: matchQuestionIndices[matchQuestionIndices.length - 1], rows: tableRows });
+                  currentAnswer = [];
+                  tableRows = []; // Clear tableRows for the next question
+              }
+              isAnswer = false;
+              isMatchTheFollowing = line.includes("Match"); // Detect if it's "Match the Following"
+
+              if (isMatchTheFollowing) {
+                  matchQuestionIndices.push(index); // Track the question index for table
+              }
+          } else if (line.startsWith('Answer:')) {
+              isAnswer = true;
+              currentAnswer.push(line.replace('Answer:', '').trim());
+          } else if (isAnswer) {
+              if (line.includes('⟷') && isMatchTheFollowing) {
+                  const parts = line.split('⟷').map(part => part.trim());
+                  if (parts.length === 2) {
+                      tableRows.push([parts[0], parts[1]]);
+                  }
+              } else {
+                  currentAnswer.push(line.trim()); // Add normal text to the current answer
+              }
+          }
       });
 
-      const totalPages = doc.internal.getNumberOfPages();
-      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-        doc.setPage(pageNum);
-        doc.setFontSize(10);
-        doc.setFont("Arial", "normal");
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth / 2, margin / 2, { align: 'center' });
+      // Push the last answer to the answers array
+      if (currentAnswer.length > 0) {
+          answers.push({ text: currentAnswer.join('\n').trim(), index: matchQuestionIndices[matchQuestionIndices.length - 1], rows: tableRows });
       }
 
-      doc.save('questions.pdf');
-    };
+      // Add the answers and tables to the PDF
+      answers.forEach((answer, index) => {
+        // Split the answer text into multiple lines to wrap within the page
+        const wrappedText = doc.splitTextToSize(`${index + 1}) ${answer.text}`, maxLineWidth);
+    
+        // Check if we need to add a new page before adding the answer text
+        if (currentY + wrappedText.length * 10 > doc.internal.pageSize.height - 30) {
+            doc.addPage();
+            currentY = 20; // Reset Y position on the new page
+        }
+    
+        doc.setTextColor(0, 0, 0); // Set text color to black
+    
+        // Add the wrapped answer text line by line
+        wrappedText.forEach(line => {
+            doc.text(line, margin, currentY);
+            currentY += 10; // Move Y position down after each line
+        });
+    
+        // Check if the answer has a "Match the Following" table
+        if (answer.rows.length > 0) {
+            const tableStartY = currentY + 5; // Add a 1-line gap before the table
+    
+            // Check if the table fits on the current page, otherwise add a new page
+            if (tableStartY + 10 > doc.internal.pageSize.height - 30) {
+                doc.addPage();
+                currentY = 20; // Reset Y position on the new page
+            }
+    
+            doc.autoTable({
+                startY: currentY, // Use currentY to start the table at the right position
+                head: [['Left Column', 'Right Column']], // Table headers
+                body: answer.rows, // Rows for the current table
+                didDrawPage: (data) => {
+                    currentY = data.cursor.y+2; // Update currentY after the table
+                }
+            });
+    
+            // Ensure consistent spacing after the table (1-line gap)
+            currentY += 5;
+        }
+    
+        // Check if we need to add a new page before the next answer
+        if (currentY > doc.internal.pageSize.height - 30) {
+            doc.addPage();
+            currentY = 20; // Reset Y position on the new page
+        }
+    });
+    
+    // Add footers to each page
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        doc.setPage(pageNum);
+        addFooter(pageNum, totalPages); // Add footer to each page
+    }
+    
+    doc.save('questions_and_answers.pdf');
+    
 
-    reader.readAsDataURL(logoBlob);
-  }, []);
+    
+    
+      };
+          reader.readAsDataURL(imageBlob);
+      }, []); // Ensure questionsArray is up-to-date
+
+
+
+  const handlePrepareDownload = (subject, grade, questions) => {
+    // Log the parameters to the console
+    console.log('Subject:', subject);
+    console.log('Grade:', grade);
+    console.log('Questions Array:', questions);
+
+    // Set the PDF details and questions array in state
+    setPdfDetails({ subject, grade });
+    setQuestionsArray(questions);
+};
 
 
   return (
@@ -193,6 +465,9 @@ const handleGenerate = useCallback((responseData) => {
         toggleDarkMode={toggleDarkMode}
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
+        history={limitedHistory}
+        sortedHistory={sortedHistory}
+        onSelectFile={handleSelectFile}
       />
 
       <button
@@ -242,7 +517,7 @@ const handleGenerate = useCallback((responseData) => {
               animation: 'shine 2s linear infinite',
             }}
           >
-            Generate
+             Generate
             <FontAwesomeIcon icon={faWandSparkles} className='ml-2' />
           </button>
           <style jsx>{`
@@ -281,11 +556,11 @@ const handleGenerate = useCallback((responseData) => {
             )}
             <div ref={contentRef} />
             <div className="absolute top-4 right-4 md:top-3 md:right-8 z-30 bg-white rounded-md flex space-x-2">
-              <button
-                onClick={downloadPDF}
-                disabled={isEditorDisabled}
+            <button
+                onClick={() => downloadPDF(pdfDetails.subject, pdfDetails.grade, questionsArray)}
+                disabled={isEditorDisabled || !questionsArray || questionsArray.length === 0}
                 className={`flex items-center px-3 py-1 md:px-4 md:py-2 bg-[#0c4b6e] text-white rounded-full shadow-sm text-sm md:text-base ${
-                  isEditorDisabled ? 'opacity-15 cursor-not-allowed' : 'opacity-100 cursor-pointer'
+                  isEditorDisabled || !questionsArray || questionsArray.length === 0 ? 'opacity-0 cursor-not-allowed' : 'opacity-100 cursor-pointer'
                 }`}
               >
                 Download PDF
@@ -338,8 +613,7 @@ const handleGenerate = useCallback((responseData) => {
         handleGenerate={handleGenerate}
         template={template}
         handleTemplateChange={handleTemplateChange}
-        // selectedOptions={selectedOptions}
-        // handleSelectChange={handleSelectChange}
+        onPrepareDownload={handlePrepareDownload} 
       />
     </div>
   );

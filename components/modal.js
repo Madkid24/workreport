@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import AlertBox from './alertBox';
 
 
-const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateChange }) => {
+const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateChange, onPrepareDownload}) => {
   const [subject, setSubject] = useState('');
   const [grade, setGrade] = useState('');
   const [questionDetails, setQuestionDetails] = useState(
@@ -121,7 +121,9 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       console.log('Response from backend:', responseData);
 
       const questionsArray = responseData.content.airesponse;
+      console.log(questionsArray, "questarr")
       handleGenerate(questionsArray);
+      onPrepareDownload(subject, grade, questionsArray);
       resetForm();
     } catch (error) {
       console.error('Error submitting form data:', error);
@@ -152,16 +154,33 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
             <option value="" disabled>Select Subject</option>
             <option value="English">English</option>
             <option value="Math">Math</option>
-            <option value="Science">Science</option>
+            <option value="Physics">Physics</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Biology">Biology</option>
+            <option value="Social Science">Social Science</option>
+            <option value="Political Science">Political Science</option>
+            <option value="History">History</option>
+            <option value="Geography">Geography</option>
+            <option value="Python">python</option>
+            <option value="React">React</option>
           </select>
         </div>
         <div className="mb-4">
           <label htmlFor="grade" className="block text-gray-700 mb-2">Grade <span className="text-red-500">*</span></label>
           <select id="grade" className="block w-full p-2 border border-gray-300 rounded-md" value={grade} onChange={handleGradeChange}>
             <option value="" disabled>Select Grade</option>
+            <option value="1">Grade 1</option>
+            <option value="2">Grade 2</option>
+            <option value="3">Grade 3</option>
+            <option value="4">Grade 4</option>
+            <option value="5">Grade 5</option>
+            <option value="6">Grade 6</option>
+            <option value="7">Grade 7</option>
             <option value="8">Grade 8</option>
             <option value="9">Grade 9</option>
             <option value="10">Grade 10</option>
+            <option value="11">Grade 11</option>
+            <option value="12">Grade 12</option>
           </select>
         </div>
         <div className="mb-4">
