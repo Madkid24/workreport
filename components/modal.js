@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import AlertBox from './alertBox';
 
 
-const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateChange, onPrepareDownload}) => {
+const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateChange, onPrepareDownload }) => {
   const [subject, setSubject] = useState('');
   const [grade, setGrade] = useState('');
   const [questionDetails, setQuestionDetails] = useState(
@@ -52,19 +52,19 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
     if (!subject) {
       setAlertMessage('Subject is missing');
-      setLoading(false); 
+      setLoading(false);
       return;
     }
 
     if (isNaN(grade)) {
       setAlertMessage('Grade is missing');
-      setLoading(false); 
+      setLoading(false);
       return;
     }
 
     if (!template) {
       setAlertMessage('Template is missing');
-      setLoading(false); 
+      setLoading(false);
       return;
     }
 
@@ -81,7 +81,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
       if (!allFieldsFilled) {
         setAlertMessage('Please fill all fields');
-        setLoading(false); 
+        setLoading(false);
         return;
       }
     }
@@ -101,8 +101,8 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
     try {
       const aiAuthToken = process.env.NEXT_PUBLIC_AI_AUTH_TOKEN;
-      console.log(process.env.NEXT_PUBLIC_BASE_URL,'base url')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/generate/971944d1-31ea-4442-aea5-d71533ac3953`, {
+      console.log(process.env.NEXT_PUBLIC_BASE_URL, 'base url')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/worksheet/api/generate/971944d1-31ea-4442-aea5-d71533ac3953`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,19 +120,24 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       const responseData = await response.json();
       console.log('Response from backend:', responseData);
 
-      const questionsArray = responseData.content.airesponse;
+      const questionsArray = responseData?.content?.airesponse || responseData?.content?.response || [];
       console.log(questionsArray, "questarr")
-      handleGenerate(questionsArray);
-      onPrepareDownload(subject, grade, questionsArray);
-      resetForm();
+      if (Array.isArray(questionsArray) && questionsArray.length > 0) {
+        handleGenerate(questionsArray);
+        onPrepareDownload(subject, grade, questionsArray);
+        resetForm();
+      }else{
+        setAlertMessage("can't proceed with the request! please try again later!");
+      }
+
     } catch (error) {
       console.error('Error submitting form data:', error);
-      setAlertMessage('cannot proceed with the request! please try again later!');
+      setAlertMessage('Something went wrong, Please regenerate again');
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl max-h-screen overflow-y-auto">

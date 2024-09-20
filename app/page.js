@@ -354,7 +354,7 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
                   tableRows = []; // Clear tableRows for the next question
               }
               isAnswer = false;
-              isMatchTheFollowing = line.includes("Match"); // Detect if it's "Match the Following"
+              isMatchTheFollowing = line.includes("Match the"); // Detect if it's "Match the Following"
 
               if (isMatchTheFollowing) {
                   matchQuestionIndices.push(index); // Track the question index for table
@@ -389,7 +389,9 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
             doc.addPage();
             currentY = 20; // Reset Y position on the new page
         }
-    
+         
+        doc.setFontSize(14);
+        doc.setFont("Arial", "normal");
         doc.setTextColor(0, 0, 0); // Set text color to black
     
         // Add the wrapped answer text line by line
