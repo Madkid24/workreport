@@ -119,7 +119,16 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
         answerContent = `<b>Answer:</b> ${item.Answer}`;
       }
 
-      return `<div><b>Topic: ${item.QuestionTopic}</b><br><b>Question ${item.QuestionNumber}:</b> ${item.Question}<br>${answerContent}</div><br>`;
+      return `
+          <div>
+            <b>Topic:</b> ${item.QuestionTopic}<br>
+            <b>Blooms Level:</b> ${item.BloomsLevel}<br>
+            <b>Difficulty Level:</b> ${item.DifficultyLevel}<br>
+            <b>Question ${item.QuestionNumber}:</b> ${item.Question}<br>
+            ${answerContent}
+          </div>
+          <br>
+        `;
     })
     .join('');
 
@@ -329,121 +338,121 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
 
         // Preserve the existing "ANSWERS" content and format it as needed
         doc.addPage();
-        addImageHeader("A N S W E R S");
+      addImageHeader("A N S W E R S");
 
-        const editorContent = document.querySelector('.sun-editor-editable').innerText;
-        const lines = editorContent.split('\n');
-        const answers = [];
-        let currentAnswer = [];
-        let isAnswer = false;
-        let isMatchTheFollowing = false; // Flag for "Match the Following"
-        let matchQuestionIndices = []; // Array to track indices of questions with "Match the Following"
-        let tableRows = []; // Array to store rows for the current table
-        let currentY = 50; // Initial Y position for answers
+      const editorContent = document.querySelector('.sun-editor-editable').innerText;
+      const lines = editorContent.split('\n');
+      const answers = [];
+      let currentAnswer = [];
+      let isAnswer = false;
+      let isMatchTheFollowing = false; // Flag for "Match the Following"
+      let matchQuestionIndices = []; // Array to track indices of questions with "Match the Following"
+      let tableRows = []; // Array to store rows for the current table
+      let currentY = 50; // Initial Y position for answers
 
-        // const pageWidth = doc.internal.pageSize.width;
-        const margin = 20;
-        const maxLineWidth = pageWidth - 2 * margin; // Calculate the maximum width for text lines
+      // const pageWidth = doc.internal.pageSize.width;
+      const margin = 20;
+      const maxLineWidth = pageWidth - 2 * margin; // Calculate the maximum width for text lines
 
-        // Process each line to extract questions, answers, and "Match the Following" data
-        lines.forEach((line, index) => {
-            if (line.startsWith('Topic:')) {
-                // Skip topic lines
-                return;
-            }
-            
-            if (line.startsWith('Question')) {
-                // Push the current answer before starting a new question
-                if (currentAnswer.length > 0) {
-                    answers.push({ text: currentAnswer.join('\n').trim(), index: matchQuestionIndices[matchQuestionIndices.length - 1], rows: tableRows });
-                    currentAnswer = [];
-                    tableRows = []; // Clear tableRows for the next question
-                }
-                isAnswer = false;
-                isMatchTheFollowing = line.includes("Match the"); // Detect if it's "Match the Following"
-
-                if (isMatchTheFollowing) {
-                    matchQuestionIndices.push(index); // Track the question index for table
-                }
-            } else if (line.startsWith('Answer:')) {
-                isAnswer = true;
-                currentAnswer.push(line.replace('Answer:', '').trim());
-            } else if (isAnswer) {
-                if (line.includes('⟷') && isMatchTheFollowing) {
-                    const parts = line.split('⟷').map(part => part.trim());
-                    if (parts.length === 2) {
-                        tableRows.push([parts[0], parts[1]]);
-                    }
-                } else {
-                    currentAnswer.push(line.trim()); // Add normal text to the current answer
-                }
-            }
-        });
-
-        // Push the last answer to the answers array
-        if (currentAnswer.length > 0) {
-            answers.push({ text: currentAnswer.join('\n').trim(), index: matchQuestionIndices[matchQuestionIndices.length - 1], rows: tableRows });
+      // Process each line to extract questions, answers, and "Match the Following" data
+      lines.forEach((line, index) => {
+        if (line.startsWith('Topic:') || line.startsWith('Blooms Level:') || line.startsWith('Difficulty Level:')) {
+            // Skip topic, Blooms level, and difficulty level lines
+            return;
         }
-
-        // Add the answers and tables to the PDF
-        answers.forEach((answer, index) => {
-            // Split the answer text into multiple lines to wrap within the page
-            const wrappedText = doc.splitTextToSize(`${index + 1}) ${answer.text}`, maxLineWidth);
-
-            // Check if we need to add a new page before adding the answer text
-            if (currentY + wrappedText.length * 10 > doc.internal.pageSize.height - 30) {
-                doc.addPage();
-                currentY = 20; // Reset Y position on the new page
+    
+        if (line.startsWith('Question')) {
+            // Push the current answer before starting a new question
+            if (currentAnswer.length > 0) {
+                answers.push({ text: currentAnswer.join('\n').trim(), index: matchQuestionIndices[matchQuestionIndices.length - 1], rows: tableRows });
+                currentAnswer = [];
+                tableRows = []; // Clear tableRows for the next question
             }
-            
-            doc.setFontSize(14);
-            doc.setFont("Arial", "normal");
-            doc.setTextColor(0, 0, 0); // Set text color to black
-
-            // Add the wrapped answer text line by line
-            wrappedText.forEach(line => {
-                doc.text(line, margin, currentY);
-                currentY += 10; // Move Y position down after each line
-            });
-
-            // Check if the answer has a "Match the Following" table
-            if (answer.rows.length > 0) {
-                const tableStartY = currentY + 5; // Add a 1-line gap before the table
-
-                // Check if the table fits on the current page, otherwise add a new page
-                if (tableStartY + 10 > doc.internal.pageSize.height - 30) {
-                    doc.addPage();
-                    currentY = 20; // Reset Y position on the new page
+            isAnswer = false;
+            isMatchTheFollowing = line.includes("Match the"); // Detect if it's "Match the Following"
+    
+            if (isMatchTheFollowing) {
+                matchQuestionIndices.push(index); // Track the question index for table
+            }
+        } else if (line.startsWith('Answer:')) {
+            isAnswer = true;
+            currentAnswer.push(line.replace('Answer:', '').trim());
+        } else if (isAnswer) {
+            if (line.includes('⟷') && isMatchTheFollowing) {
+                const parts = line.split('⟷').map(part => part.trim());
+                if (parts.length === 2) {
+                    tableRows.push([parts[0], parts[1]]);
                 }
-
-                doc.autoTable({
-                    startY: currentY, // Use currentY to start the table at the right position
-                    head: [['Left Column', 'Right Column']], // Table headers
-                    body: answer.rows, // Rows for the current table
-                    didDrawPage: (data) => {
-                        currentY = data.cursor.y + 2; // Update currentY after the table
-                    }
-                });
-
-                // Ensure consistent spacing after the table (1-line gap)
-                currentY += 5;
+            } else {
+                currentAnswer.push(line.trim()); // Add normal text to the current answer
             }
-
-            // Check if we need to add a new page before the next answer
-            if (currentY > doc.internal.pageSize.height - 30) {
-                doc.addPage();
-                currentY = 20; // Reset Y position on the new page
-            }
-        });
-
-        // Add footers to each page
-        const totalPages = doc.internal.getNumberOfPages();
-        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-            doc.setPage(pageNum);
-            addFooter(pageNum, totalPages); // Add footer to each page
         }
+    });
 
-        doc.save('questions_and_answers.pdf');
+      // Push the last answer to the answers array
+      if (currentAnswer.length > 0) {
+          answers.push({ text: currentAnswer.join('\n').trim(), index: matchQuestionIndices[matchQuestionIndices.length - 1], rows: tableRows });
+      }
+
+      // Add the answers and tables to the PDF
+      answers.forEach((answer, index) => {
+          // Split the answer text into multiple lines to wrap within the page
+          const wrappedText = doc.splitTextToSize(`${index + 1}) ${answer.text}`, maxLineWidth);
+
+          // Check if we need to add a new page before adding the answer text
+          if (currentY + wrappedText.length * 10 > doc.internal.pageSize.height - 30) {
+              doc.addPage();
+              currentY = 20; // Reset Y position on the new page
+          }
+          
+          doc.setFontSize(14);
+          doc.setFont("Arial", "normal");
+          doc.setTextColor(0, 0, 0); // Set text color to black
+
+          // Add the wrapped answer text line by line
+          wrappedText.forEach(line => {
+              doc.text(line, margin, currentY);
+              currentY += 10; // Move Y position down after each line
+          });
+
+          // Check if the answer has a "Match the Following" table
+          if (answer.rows.length > 0) {
+              const tableStartY = currentY + 5; // Add a 1-line gap before the table
+
+              // Check if the table fits on the current page, otherwise add a new page
+              if (tableStartY + 10 > doc.internal.pageSize.height - 30) {
+                  doc.addPage();
+                  currentY = 20; // Reset Y position on the new page
+              }
+
+              doc.autoTable({
+                  startY: currentY, // Use currentY to start the table at the right position
+                  head: [['Left Column', 'Right Column']], // Table headers
+                  body: answer.rows, // Rows for the current table
+                  didDrawPage: (data) => {
+                      currentY = data.cursor.y + 2; // Update currentY after the table
+                  }
+              });
+
+              // Ensure consistent spacing after the table (1-line gap)
+              currentY += 5;
+          }
+
+          // Check if we need to add a new page before the next answer
+          if (currentY > doc.internal.pageSize.height - 30) {
+              doc.addPage();
+              currentY = 20; // Reset Y position on the new page
+          }
+      });
+
+      // Add footers to each page
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+          doc.setPage(pageNum);
+          addFooter(pageNum, totalPages); // Add footer to each page
+      }
+
+      doc.save('questions_and_answers.pdf');
 
     
       };
