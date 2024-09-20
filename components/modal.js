@@ -166,8 +166,6 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
             <option value="Political Science">Political Science</option>
             <option value="History">History</option>
             <option value="Geography">Geography</option>
-            <option value="Python">python</option>
-            <option value="React">React</option>
           </select>
         </div>
         <div className="mb-4">
