@@ -9,10 +9,10 @@ import { fetchGrades, fetchSubjects, fetchTopics } from './query';
 const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateChange, onPrepareDownload }) => {
   const [subject, setSubject] = useState('');
   const [subjects, setSubjects] = useState([]);
-  const [subjectsFetched, setSubjectsFetched] = useState(false);
+  const [subjectsFetched, setSubjectsFetched] = useState('');
   const [grade, setGrade] = useState('');
   const [grades, setGrades] = useState([]);
-  const [gradesFetched, setGradesFetched] = useState(false);
+  const [gradesFetched, setGradesFetched] = useState('');
   const [topic, setTopic] = useState('');
   const [topics, setTopics] = useState([]);
   const [questionDetails, setQuestionDetails] = useState(
@@ -31,7 +31,9 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
   const handleSubjectChange = async (e) => {
     const selectedSubject = e.target.value;
+    const selectedSubjectName = subjects.find(subj => subj.id === selectedSubject).subject_name;
     setSubject(selectedSubject); // Set subject ID
+    setSubjectsFetched(selectedSubjectName);
     setGrade(''); // Reset grade when subject changes
     setTopic('');
     setTopics([]); // Clear topics when subject changes
@@ -41,7 +43,9 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
   // Handle grade change
   const handleGradeChange = async (e) => {
     const selectedGrade = e.target.value;
+    const selectedGradeName = grades.find(grd => grd.id === selectedGrade).grade_name;
     setGrade(selectedGrade); // Set grade ID
+    setGradesFetched(selectedGradeName);
     setTopic('');
     await getTopics(subject, selectedGrade); // Fetch topics based on selected subject and grade
   };
@@ -58,7 +62,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     try {
       const fetchedSubjects = await fetchSubjects();
       setSubjects(fetchedSubjects);
-      setSubjectsFetched(true); // Set to true after fetching
+      // setSubjectsFetched(true); // Set to true after fetching
     } catch (err) {
       setAlertMessage('Error fetching subjects. Please try again.');
     }
@@ -68,7 +72,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     try {
       const fetchedGrades = await fetchGrades();
       setGrades(fetchedGrades);
-      setGradesFetched(true);
+      // setGradesFetched(true);
     }catch (err) {
       setAlertMessage('Error fetching subjects. Please try again.');
     }
@@ -94,7 +98,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
   // Call this function when modal opens
   const handleModalOpen = () => {
-    if (isOpen && !subjectsFetched && !gradesFetched) {
+    if (isOpen && !subject && !grade) {
       getSubjects(); // Fetch subjects when the modal opens
       getGrades();
     }
@@ -187,7 +191,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     try {
       const aiAuthToken = process.env.NEXT_PUBLIC_AI_AUTH_TOKEN;
       console.log(process.env.NEXT_PUBLIC_BASE_URL, 'base url')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/worksheet/api/generate/971944d1-31ea-4442-aea5-d71533ac3953`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/worksheet/generate/971944d1-31ea-4442-aea5-d71533ac3953`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -209,7 +213,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       console.log(questionsArray, "questarr")
       if (Array.isArray(questionsArray) && questionsArray.length > 0) {
         handleGenerate(questionsArray, subject, grade);
-        onPrepareDownload(subject, grade, questionsArray);
+        onPrepareDownload(subjectsFetched, gradesFetched, questionsArray);
         resetForm();
       }else{
         setAlertMessage("can't proceed with the request! please try again later!");
@@ -266,7 +270,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
             <>
               <option value="" disabled>Select Topic</option>
               {topics.map((top) => (
-                <option key={top.id} value={top.id}>{top.topic_name}</option>
+                <option key={top.id} value={top.topic_name}>{top.topic_name}</option>
               ))}
             </>
           )}
