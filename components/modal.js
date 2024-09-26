@@ -2,11 +2,18 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWandSparkles, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import React, { useState, useEffect } from 'react';
 import AlertBox from './alertBox';
+import { fetchGrades, fetchSubjects } from './query';
+
 
 
 const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateChange, onPrepareDownload }) => {
   const [subject, setSubject] = useState('');
+  const [subjects, setSubjects] = useState([]);
+  const [subjectsFetched, setSubjectsFetched] = useState(false);
   const [grade, setGrade] = useState('');
+  const [grades, setGrades] = useState([]);
+  const [gradesFetched, setGradesFetched] = useState(false);
+  const [topic, setTopic] = useState('');
   const [questionDetails, setQuestionDetails] = useState(
     Array.from({ length: 10 }).map((_, index) => ({
       questionNumber: (index + 1).toString(),  // Auto-fill question numbers from 1 to 10
@@ -23,6 +30,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
   const handleSubjectChange = (e) => setSubject(e.target.value);
   const handleGradeChange = (e) => setGrade(e.target.value);
+  const handleTopicChange = (e) => setTopic(e.target.value);
 
   const handleDetailChange = (index, field, value) => {
     const updatedDetails = [...questionDetails];
@@ -30,9 +38,44 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     setQuestionDetails(updatedDetails);
   };
 
+  const getSubjects = async () => {
+    try {
+      const fetchedSubjects = await fetchSubjects();
+      setSubjects(fetchedSubjects);
+      setSubjectsFetched(true); // Set to true after fetching
+    } catch (err) {
+      setAlertMessage('Error fetching subjects. Please try again.');
+    }
+  };
+
+  const getGrades = async () => {
+    try {
+      const fetchedGrades = await fetchGrades();
+      setGrades(fetchedGrades);
+      setGradesFetched(true);
+    }catch (err) {
+      setAlertMessage('Error fetching subjects. Please try again.');
+    }
+  };
+
+  // Call this function when modal opens
+  const handleModalOpen = () => {
+    if (isOpen && !subjectsFetched && !gradesFetched) {
+      getSubjects(); // Fetch subjects when the modal opens
+      getGrades();
+    }
+  };
+
+
+  if (isOpen) {
+    handleModalOpen(); // Fetch subjects when the modal is open
+    // handleGradesOpen();
+  }  
+
   const resetForm = () => {
     setSubject('');
     setGrade('');
+    setTopic('');
     handleTemplateChange({ target: { value: 'default' } });
     setQuestionDetails(
       Array.from({ length: 10 }).map((_, index) => ({
@@ -47,7 +90,8 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
   const handleFormSubmit = async () => {
     setLoading(true);
     const subject = document.getElementById('subject')?.value;
-    const grade = parseInt(document.getElementById('grade')?.value, 10);
+    const grade = parseInt(document.getElementById('grade')?.value, 12);
+    const topic = document.getElementById('topic')?.value;
     const template = document.getElementById('template')?.value;
 
     if (!subject) {
@@ -58,6 +102,12 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
     if (isNaN(grade)) {
       setAlertMessage('Grade is missing');
+      setLoading(false);
+      return;
+    }
+
+    if (!topic) {
+      setAlertMessage('Topic is missing');
       setLoading(false);
       return;
     }
@@ -93,6 +143,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     const formData = {
       subject,
       grade,
+      topic,
       template: template === 'custom' ? 'custom' : 'default',
       workSheetDetails,
     };
@@ -121,78 +172,6 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       console.log('Response from backend:', responseData);
 
       const questionsArray = responseData?.content?.airesponse || responseData?.content?.response || [];
-      // const questionsArray = [
-      //   {
-      //     QuestionNumber: 1,
-      //     Question: 'What is the value of pi up to two decimal places?',
-      //     Answer: '3.14',
-      //     QuestionType: 'MCQ',
-      //     QuestionTopic: 'Mensuration',
-      //   },
-      //   {
-      //     QuestionNumber: 2,
-      //     Question: 'Which of the following equations represents a linear relationship?',
-      //     Answer: 'y = 3x + 2',
-      //     QuestionType: 'MCQ',
-      //     QuestionTopic: 'Linear Equations',
-      //   },
-      //   {
-      //     QuestionNumber: 3,
-      //     Question: 'Which of the following shapes has the largest area for a given perimeter?',
-      //     Answer: 'Circle',
-      //     QuestionType: 'MCQ',
-      //     QuestionTopic: 'Areas of Plane Figures',
-      //   },
-      //   {
-      //     QuestionNumber: 4,
-      //     Question: 'If the roots of the quadratic equation ax^2 + bx + c = 0 are equal, which condition must hold?',
-      //     Answer: 'b^2 - 4ac = 0',
-      //     QuestionType: 'MCQ',
-      //     QuestionTopic: 'Quadratic Equations',
-      //   },
-      //   {
-      //     QuestionNumber: 5,
-      //     Question: 'Calculate the value of x if 3x + 5 = 20.',
-      //     Answer: '5',
-      //     QuestionType: 'MCQ',
-      //     QuestionTopic: 'Linear Equations',
-      //   },
-      //   {
-      //     QuestionNumber: 6,
-      //     Question: 'The area of a rectangle is given by the formula _____.',
-      //     Answer: 'length × width',
-      //     QuestionType: 'Fill in the blank',
-      //     QuestionTopic: 'Mensuration',
-      //   },
-      //   {
-      //     QuestionNumber: 7,
-      //     Question: 'To design a garden in the shape of a circle with a radius of r, the area will be composed of _____ square meters.',
-      //     Answer: 'πr^2',
-      //     QuestionType: 'Fill in the blank',
-      //     QuestionTopic: 'Areas of Plane Figures',
-      //   },
-      //   {
-      //     QuestionNumber: 8,
-      //     Question: 'Match the following: Left labels: [Circle, Square,…], internal angles: [360, sum of internal angles: 180]',
-      //     Answer: ['Circle - 360', 'Square - 360'],
-      //     QuestionType: 'Match the following',
-      //     QuestionTopic: 'Geometric Shapes',
-      //   },
-      //   {
-      //     QuestionNumber: 9,
-      //     Question: 'Explain the Pythagorean theorem.',
-      //     Answer: 'The Pythagorean theorem states that in a right triangle, the square of the hypotenuse is equal to the sum of the squares of the other two sides.',
-      //     QuestionType: 'Short answer',
-      //     QuestionTopic: 'Geometry',
-      //   },
-      //   {
-      //     QuestionNumber: 10,
-      //     Question: 'Design a triangle with a fixed perimeter of 30 cm. Ensure the triangle inequality holds.',
-      //     Answer: 'To design a triangle with a fixed perimeter of 30 cm, select side lengths such as 10 cm, 10 cm, and 10 cm to satisfy these conditions.',
-      //     QuestionType: 'Short answer',
-      //     QuestionTopic: 'Geometry',
-      //   },
-      // ];
       console.log(questionsArray, "questarr")
       if (Array.isArray(questionsArray) && questionsArray.length > 0) {
         handleGenerate(questionsArray, subject, grade);
@@ -209,6 +188,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       setLoading(false);
     }
   };
+
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75 z-50">
@@ -229,33 +209,29 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
             required
           >
             <option value="" disabled>Select Subject</option>
-            <option value="English">English</option>
-            <option value="Math">Math</option>
-            <option value="Physics">Physics</option>
-            <option value="Chemistry">Chemistry</option>
-            <option value="Biology">Biology</option>
-            <option value="Social Science">Social Science</option>
-            <option value="Political Science">Political Science</option>
-            <option value="History">History</option>
-            <option value="Geography">Geography</option>
-          </select>
-        </div>
+          {subjects.map((subj) => (
+            <option key={subj.id} value={subj.subject_name}>{subj.subject_name}</option>
+          ))}
+        </select>
+      </div>
         <div className="mb-4">
           <label htmlFor="grade" className="block text-gray-700 mb-2">Grade <span className="text-red-500">*</span></label>
           <select id="grade" className="block w-full p-2 border border-gray-300 rounded-md" value={grade} onChange={handleGradeChange}>
-            <option value="" disabled>Select Grade</option>
-            <option value="1">Grade 1</option>
-            <option value="2">Grade 2</option>
-            <option value="3">Grade 3</option>
-            <option value="4">Grade 4</option>
-            <option value="5">Grade 5</option>
-            <option value="6">Grade 6</option>
-            <option value="7">Grade 7</option>
-            <option value="8">Grade 8</option>
-            <option value="9">Grade 9</option>
-            <option value="10">Grade 10</option>
-            <option value="11">Grade 11</option>
-            <option value="12">Grade 12</option>
+          <option value="" disabled>Select Grade</option>
+            {grades.map((grd) => (
+              <option key={grd.id} value={grd.grade_name}>{grd.grade_name}</option> // Ensure this returns the option
+            ))}
+          </select>
+        </div>
+        <div className='mb-4'>
+          <label htmlFor="topic" className='block text-gray-700 mb-2'>Topic <span className='text-red-500'>*</span></label>
+          <select id="topic" className='block w-full p-2 border border-gray-300 rounded md' value={topic} onChange={handleTopicChange}>
+            <option value="" disabled>Select Topic</option>
+            <option value="PermutationCombination">Permutation and Combination</option>
+            <option value="Probability">Probability</option>
+            <option value="Vector">Vector</option>
+            <option value="sets">Sets</option>
+            <option value="graph">Graph</option>
           </select>
         </div>
         <div className="mb-4">
@@ -275,7 +251,9 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
             {Array.from({ length: 10 }).map((_, index) => (
               <div key={index} className="grid grid-cols-4 gap-4">
                 <div className="flex-1">
-                  <label htmlFor={`question-no-${index}`} className="block text-gray-700 mb-2">Question No <span className="text-red-500">*</span></label>
+                  <label htmlFor={`question-no-${index}`} className="block text-gray-700 mb-2">
+                    Question No <span className="text-red-500">*</span>
+                  </label>
                   <input
                     id={`question-no-${index}`}
                     type="text"
@@ -285,8 +263,15 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
                   />
                 </div>
                 <div className="flex-1">
-                  <label htmlFor={`type-${index}`} className="block text-gray-700 mb-2">Type <span className="text-red-500">*</span></label>
-                  <select id={`type-${index}`} className="block w-full p-2 border border-gray-300 rounded-md" value={questionDetails[index].questionType} onChange={(e) => handleDetailChange(index, 'questionType', e.target.value)}>
+                  <label htmlFor={`type-${index}`} className="block text-gray-700 mb-2">
+                    Type <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id={`type-${index}`}
+                    className="block w-full p-2 border border-gray-300 rounded-md"
+                    value={questionDetails[index].questionType}
+                    onChange={(e) => handleDetailChange(index, 'questionType', e.target.value)}
+                  >
                     <option value="" disabled>Select Type</option>
                     <option value="Fill in the blank">Fill in the blank</option>
                     <option value="MCQ">MCQ</option>
@@ -295,8 +280,15 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
                   </select>
                 </div>
                 <div className="flex-1">
-                  <label htmlFor={`difficulty-${index}`} className="block text-gray-700 mb-2">Difficulty <span className="text-red-500">*</span></label>
-                  <select id={`difficulty-${index}`} className="block w-full p-2 border border-gray-300 rounded-md" value={questionDetails[index].difficulty} onChange={(e) => handleDetailChange(index, 'difficulty', e.target.value)}>
+                  <label htmlFor={`difficulty-${index}`} className="block text-gray-700 mb-2">
+                    Difficulty <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id={`difficulty-${index}`}
+                    className="block w-full p-2 border border-gray-300 rounded-md"
+                    value={questionDetails[index].difficulty}
+                    onChange={(e) => handleDetailChange(index, 'difficulty', e.target.value)}
+                  >
                     <option value="" disabled>Select Difficulty</option>
                     <option value="Easy">Easy</option>
                     <option value="Medium">Medium</option>
@@ -304,8 +296,15 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
                   </select>
                 </div>
                 <div className="flex-1">
-                  <label htmlFor={`blooms-level-${index}`} className="block text-gray-700 mb-2">Blooms Level <span className="text-red-500">*</span></label>
-                  <select id={`blooms-level-${index}`} className="block w-full p-2 border border-gray-300 rounded-md" value={questionDetails[index].blooms} onChange={(e) => handleDetailChange(index, 'blooms', e.target.value)}>
+                  <label htmlFor={`blooms-level-${index}`} className="block text-gray-700 mb-2">
+                    Blooms Level <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id={`blooms-level-${index}`}
+                    className="block w-full p-2 border border-gray-300 rounded-md"
+                    value={questionDetails[index].blooms}
+                    onChange={(e) => handleDetailChange(index, 'blooms', e.target.value)}
+                  >
                     <option value="" disabled>Select Blooms Level</option>
                     <option value="Knowledge">Knowledge</option>
                     <option value="Understanding">Understanding</option>
@@ -317,6 +316,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
             ))}
           </div>
         )}
+
         <div className="flex justify-end">
           <button
             type="button"

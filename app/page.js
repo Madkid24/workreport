@@ -164,7 +164,11 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
     }
   };
   
-  const handlePrepareDownload = (subject, grade, questions) => {
+  
+
+
+
+    const handlePrepareDownload = (subject, grade, questions) => {
       console.log('Subject:', subject);
       console.log('Grade:', grade);
       console.log('Questions Array:', questions);
