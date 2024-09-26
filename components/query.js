@@ -53,3 +53,21 @@ export const fetchSubjects = async () => {
      }
   };
   
+  export const fetchTopics = async (subjectId, gradeId) => {
+    const query = gql`
+      query GetTopics($subjectId: uuid!, $gradeId: uuid!) {
+        topics(where: {subject_id: {_eq: $subjectId}, grade_id: {_eq: $gradeId}}) {
+          id
+          topic_name
+        }
+      }
+    `;
+  
+    try {
+      const data = await client.request(query, { subjectId, gradeId });
+      return data.topics;
+    } catch (error) {
+      console.error("Error fetching topics:", error.response?.errors || error);
+      throw error;
+    }
+  };

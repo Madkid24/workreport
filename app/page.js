@@ -47,7 +47,7 @@ const LandingPage = () => {
 
   const limitedHistory = sortedHistory.slice(0, 5);
 
-  const simulateTyping = useCallback((text, interval = 50) => {
+  const simulateTyping = useCallback((text, interval = 30) => {
     let index = 0;
     setIsEditorDisabled(true); // Disable editor before typing starts
     const typingInterval = setInterval(() => {
@@ -67,16 +67,16 @@ const LandingPage = () => {
   
   useEffect(() => {
     if (contentRef.current) {
-      contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      contentRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
     }
   }, [content]);
 
-  const handlePreview = () => {
-    const editorQuestions = extractQuestionsFromEditor();
-    const categorizedQuestions = processQuestionsArray(questionsArray, editorQuestions);
+//   const handlePreview = () => {
+//     const editorQuestions = extractQuestionsFromEditor();
+//     const categorizedQuestions = processQuestionsArray(questionsArray, editorQuestions);
     
-    localStorage.setItem('objectiveQuestions', JSON.stringify(categorizedQuestions.objectiveQuestions));
-};
+//     localStorage.setItem('objectiveQuestions', JSON.stringify(categorizedQuestions.objectiveQuestions));
+// };
 
   const handleGenerateClick = () => {
     setIsModalOpen(true);
@@ -164,9 +164,6 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
     }
   };
   
-  
-
-
 
     const handlePrepareDownload = (subject, grade, questions) => {
       console.log('Subject:', subject);
@@ -217,6 +214,7 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
           const number = parseInt(match[1], 10);
           const text = match[2];
           extractedQuestions[number] = text;
+          console.log(`Extracted Question Number: ${number}`); 
         }
       });
     

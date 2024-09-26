@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWandSparkles, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import React, { useState, useEffect } from 'react';
 import AlertBox from './alertBox';
-import { fetchGrades, fetchSubjects } from './query';
+import { fetchGrades, fetchSubjects, fetchTopics } from './query';
 
 
 
@@ -14,6 +14,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
   const [grades, setGrades] = useState([]);
   const [gradesFetched, setGradesFetched] = useState(false);
   const [topic, setTopic] = useState('');
+  const [topics, setTopics] = useState([]);
   const [questionDetails, setQuestionDetails] = useState(
     Array.from({ length: 10 }).map((_, index) => ({
       questionNumber: (index + 1).toString(),  // Auto-fill question numbers from 1 to 10
@@ -28,8 +29,23 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
   if (!isOpen) return null;
 
-  const handleSubjectChange = (e) => setSubject(e.target.value);
-  const handleGradeChange = (e) => setGrade(e.target.value);
+  const handleSubjectChange = async (e) => {
+    const selectedSubject = e.target.value;
+    setSubject(selectedSubject); // Set subject ID
+    setGrade(''); // Reset grade when subject changes
+    setTopic('');
+    setTopics([]); // Clear topics when subject changes
+    await getGrades(); // Fetch grades based on selected subject
+  };
+
+  // Handle grade change
+  const handleGradeChange = async (e) => {
+    const selectedGrade = e.target.value;
+    setGrade(selectedGrade); // Set grade ID
+    setTopic('');
+    await getTopics(subject, selectedGrade); // Fetch topics based on selected subject and grade
+  };
+
   const handleTopicChange = (e) => setTopic(e.target.value);
 
   const handleDetailChange = (index, field, value) => {
@@ -55,6 +71,24 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       setGradesFetched(true);
     }catch (err) {
       setAlertMessage('Error fetching subjects. Please try again.');
+    }
+  };
+
+  const getTopics = async (subjectId, gradeId) => {
+    if (!subjectId || !gradeId) {
+      setTopics([]); // Clear topics if subject or grade is not selected
+      return;
+    }
+    
+    try {
+      const fetchedTopics = await fetchTopics(subjectId, gradeId); // Fetch topics based on subject and grade
+      if (fetchedTopics.length === 0) {
+        setTopics(null); // Set to null when no topics are mapped
+      } else {
+        setTopics(fetchedTopics); // Set fetched topics if they exist
+      }
+    } catch (err) {
+      setAlertMessage('Error fetching topics. Please try again.');
     }
   };
 
@@ -89,18 +123,18 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
   const handleFormSubmit = async () => {
     setLoading(true);
-    const subject = document.getElementById('subject')?.value;
-    const grade = parseInt(document.getElementById('grade')?.value, 12);
+    const subjectId = subject;
+    const gradeId = grade; 
     const topic = document.getElementById('topic')?.value;
     const template = document.getElementById('template')?.value;
 
-    if (!subject) {
+    if (!subjectId) {
       setAlertMessage('Subject is missing');
       setLoading(false);
       return;
     }
 
-    if (isNaN(grade)) {
+    if (!gradeId) {
       setAlertMessage('Grade is missing');
       setLoading(false);
       return;
@@ -141,8 +175,8 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     }
 
     const formData = {
-      subject,
-      grade,
+      subject: subjectId,
+      grade: gradeId,
       topic,
       template: template === 'custom' ? 'custom' : 'default',
       workSheetDetails,
@@ -210,7 +244,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
           >
             <option value="" disabled>Select Subject</option>
           {subjects.map((subj) => (
-            <option key={subj.id} value={subj.subject_name}>{subj.subject_name}</option>
+            <option key={subj.id} value={subj.id}>{subj.subject_name}</option>
           ))}
         </select>
       </div>
@@ -219,21 +253,25 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
           <select id="grade" className="block w-full p-2 border border-gray-300 rounded-md" value={grade} onChange={handleGradeChange}>
           <option value="" disabled>Select Grade</option>
             {grades.map((grd) => (
-              <option key={grd.id} value={grd.grade_name}>{grd.grade_name}</option> // Ensure this returns the option
+              <option key={grd.id} value={grd.id}>{grd.grade_name}</option> // Ensure this returns the option
             ))}
           </select>
         </div>
         <div className='mb-4'>
           <label htmlFor="topic" className='block text-gray-700 mb-2'>Topic <span className='text-red-500'>*</span></label>
           <select id="topic" className='block w-full p-2 border border-gray-300 rounded md' value={topic} onChange={handleTopicChange}>
-            <option value="" disabled>Select Topic</option>
-            <option value="PermutationCombination">Permutation and Combination</option>
-            <option value="Probability">Probability</option>
-            <option value="Vector">Vector</option>
-            <option value="sets">Sets</option>
-            <option value="graph">Graph</option>
-          </select>
-        </div>
+          {topics === null ? (
+            <option value="" disabled>No topic is mapped with the subject</option>
+          ) : (
+            <>
+              <option value="" disabled>Select Topic</option>
+              {topics.map((top) => (
+                <option key={top.id} value={top.id}>{top.topic_name}</option>
+              ))}
+            </>
+          )}
+        </select>
+      </div>
         <div className="mb-4">
           <label htmlFor="template" className="block text-gray-700 mb-2">Template <span className="text-red-500">*</span></label>
           <select
