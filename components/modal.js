@@ -191,27 +191,100 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     console.log('Form Data:', formData);
 
     try {
-      const aiAuthToken = process.env.NEXT_PUBLIC_AI_AUTH_TOKEN;
-      console.log(process.env.NEXT_PUBLIC_BASE_URL, 'base url')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/worksheet/generate/971944d1-31ea-4442-aea5-d71533ac3953`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `${aiAuthToken}`,
+      // const aiAuthToken = process.env.NEXT_PUBLIC_AI_AUTH_TOKEN;
+      // console.log(process.env.NEXT_PUBLIC_BASE_URL, 'base url')
+      // const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/worksheet/generate/971944d1-31ea-4442-aea5-d71533ac3953`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `${aiAuthToken}`,
+      //   },
+      //   body: JSON.stringify(formData),
+      // });
+
+      // console.log(response, 'res');
+
+      // if (!response.ok) {
+      //   setAlertMessage('cannot proceed with the request! please try again later!');
+      // }
+
+      // const responseData = await response.json();
+      // console.log('Response from backend:', responseData);
+
+      // const questionsArray = responseData?.content?.airesponse || responseData?.content?.response || [];
+
+      const questionsArray = [
+        {
+          QuestionNumber: 1,
+          Question: 'What is the value of pi up to two decimal places?',
+          Answer: '3.14',
+          QuestionType: 'MCQ',
+          QuestionTopic: 'Mensuration',
         },
-        body: JSON.stringify(formData),
-      });
-
-      console.log(response, 'res');
-
-      if (!response.ok) {
-        setAlertMessage('cannot proceed with the request! please try again later!');
-      }
-
-      const responseData = await response.json();
-      console.log('Response from backend:', responseData);
-
-      const questionsArray = responseData?.content?.airesponse || responseData?.content?.response || [];
+        {
+          QuestionNumber: 2,
+          Question: 'Which of the following equations represents a linear relationship?',
+          Answer: 'y = 3x + 2',
+          QuestionType: 'MCQ',
+          QuestionTopic: 'Linear Equations',
+        },
+        {
+          QuestionNumber: 3,
+          Question: 'Which of the following shapes has the largest area for a given perimeter?',
+          Answer: 'Circle',
+          QuestionType: 'MCQ',
+          QuestionTopic: 'Areas of Plane Figures',
+        },
+        {
+          QuestionNumber: 4,
+          Question: 'If the roots of the quadratic equation ax^2 + bx + c = 0 are equal, which condition must hold?',
+          Answer: 'b^2 - 4ac = 0',
+          QuestionType: 'MCQ',
+          QuestionTopic: 'Quadratic Equations',
+        },
+        {
+          QuestionNumber: 5,
+          Question: 'Calculate the value of x if 3x + 5 = 20.',
+          Answer: '5',
+          QuestionType: 'MCQ',
+          QuestionTopic: 'Linear Equations',
+        },
+        {
+          QuestionNumber: 6,
+          Question: 'The area of a rectangle is given by the formula _____.',
+          Answer: 'length × width',
+          QuestionType: 'Fill in the blank',
+          QuestionTopic: 'Mensuration',
+        },
+        {
+          QuestionNumber: 7,
+          Question: 'To design a garden in the shape of a circle with a radius of r, the area will be composed of _____ square meters.',
+          Answer: 'πr^2',
+          QuestionType: 'Fill in the blank',
+          QuestionTopic: 'Areas of Plane Figures',
+        },
+        {
+          QuestionNumber: 8,
+          Question: 'Match the following: Left labels: [Circle, Square,…], internal angles: [360, sum of internal angles: 180]',
+          Answer: ['Circle - 360', 'Square - 360'],
+          QuestionType: 'Match the following',
+          QuestionTopic: 'Geometric Shapes',
+        },
+        {
+          QuestionNumber: 9,
+          Question: 'Explain the Pythagorean theorem.',
+          Answer: 'The Pythagorean theorem states that in a right triangle, the square of the hypotenuse is equal to the sum of the squares of the other two sides.',
+          QuestionType: 'Short answer',
+          QuestionTopic: 'Geometry',
+        },
+        {
+          QuestionNumber: 10,
+          Question: 'Design a triangle with a fixed perimeter of 30 cm. Ensure the triangle inequality holds.',
+          Answer: 'To design a triangle with a fixed perimeter of 30 cm, select side lengths such as 10 cm, 10 cm, and 10 cm to satisfy these conditions.',
+          QuestionType: 'Short answer',
+          QuestionTopic: 'Geometry',
+        },
+      ];
       console.log(questionsArray, "questarr")
       if (Array.isArray(questionsArray) && questionsArray.length > 0) {
         handleGenerate(questionsArray, subject, grade);

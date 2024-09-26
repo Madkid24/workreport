@@ -209,10 +209,10 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
       const extractedQuestions = {};
     
       lines.forEach(line => {
-        const match = line.match(/Question (\d+): (.+)/);
+        const match = line.match(/Question (\d+):?\s*(.+)/); // Made the colon optional and allowed for extra spaces
         if (match) {
           const number = parseInt(match[1], 10);
-          const text = match[2];
+          const text = match[2].trim(); // Trim whitespace
           extractedQuestions[number] = text;
           console.log(`Extracted Question Number: ${number}`); 
         }
@@ -220,7 +220,7 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
     
       return extractedQuestions;
     };
-
+    
     const extractAnswersFromEditor = () => {
       const editorContent = document.querySelector('.sun-editor-editable').innerText;
       const lines = editorContent.split('\n');
@@ -234,8 +234,8 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
           currentQuestionNumber = parseInt(questionMatch[1], 10);
         }
     
-        // Match for Answer for Objective and Short Answers
-        const answerMatch = line.match(/Answer: (.+)/);
+        // Match for Answer, allowing flexibility for starting characters
+        const answerMatch = line.match(/Answer:\s*(.+)/);
         if (answerMatch && currentQuestionNumber !== null) {
           extractedAnswers[currentQuestionNumber] = answerMatch[1].trim();
           return; // Skip to the next iteration
@@ -265,6 +265,8 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
     
       return extractedAnswers;
     };
+    
+    
     
     
   
@@ -505,6 +507,8 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
       
       // Save the PDF
       pdf.save(`worksheet_${uuid}.pdf`);
+
+      printWindow.close();
     };
 
     // Close the print window when the cancel button is clicked
