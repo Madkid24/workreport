@@ -9,10 +9,10 @@ import { fetchGrades, fetchSubjects, fetchTopics } from './query';
 const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateChange, onPrepareDownload }) => {
   const [subject, setSubject] = useState('');
   const [subjects, setSubjects] = useState([]);
-  const [subjectsFetched, setSubjectsFetched] = useState('');
+  const [subjectsFetched, setSubjectsFetched] = useState(false);
   const [grade, setGrade] = useState('');
   const [grades, setGrades] = useState([]);
-  const [gradesFetched, setGradesFetched] = useState('');
+  const [gradesFetched, setGradesFetched] = useState(false);
   const [topic, setTopic] = useState('');
   const [topics, setTopics] = useState([]);
   const [questionDetails, setQuestionDetails] = useState(
@@ -31,9 +31,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
   const handleSubjectChange = async (e) => {
     const selectedSubject = e.target.value;
-    const selectedSubjectName = subjects.find(subj => subj.id === selectedSubject).subject_name;
     setSubject(selectedSubject); // Set subject ID
-    setSubjectsFetched(selectedSubjectName);
     setGrade(''); // Reset grade when subject changes
     setTopic('');
     setTopics([]); // Clear topics when subject changes
@@ -43,9 +41,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
   // Handle grade change
   const handleGradeChange = async (e) => {
     const selectedGrade = e.target.value;
-    const selectedGradeName = grades.find(grd => grd.id === selectedGrade).grade_name;
     setGrade(selectedGrade); // Set grade ID
-    setGradesFetched(selectedGradeName);
     setTopic('');
     await getTopics(subject, selectedGrade); // Fetch topics based on selected subject and grade
   };
@@ -62,7 +58,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     try {
       const fetchedSubjects = await fetchSubjects();
       setSubjects(fetchedSubjects);
-      // setSubjectsFetched(true); // Set to true after fetching
+      setSubjectsFetched(true); // Set to true after fetching
     } catch (err) {
       setAlertMessage('Error fetching subjects. Please try again.');
     }
@@ -72,7 +68,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     try {
       const fetchedGrades = await fetchGrades();
       setGrades(fetchedGrades);
-      // setGradesFetched(true);
+      setGradesFetched(true);
     }catch (err) {
       setAlertMessage('Error fetching subjects. Please try again.');
     }
@@ -98,7 +94,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
   // Call this function when modal opens
   const handleModalOpen = () => {
-    if (isOpen && !subject && !grade) {
+    if (isOpen && !subjectsFetched && !gradesFetched) {
       getSubjects(); // Fetch subjects when the modal opens
       getGrades();
     }
@@ -213,7 +209,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       console.log(questionsArray, "questarr")
       if (Array.isArray(questionsArray) && questionsArray.length > 0) {
         handleGenerate(questionsArray, subject, grade);
-        onPrepareDownload(subjectsFetched, gradesFetched, questionsArray);
+        onPrepareDownload(subject, grade, questionsArray);
         resetForm();
       }else{
         setAlertMessage("can't proceed with the request! please try again later!");
