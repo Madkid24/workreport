@@ -10,9 +10,11 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
   const [subject, setSubject] = useState('');
   const [subjects, setSubjects] = useState([]);
   const [subjectsFetched, setSubjectsFetched] = useState(false);
+  const [subjectName, setSubjectName] = useState('');
   const [grade, setGrade] = useState('');
   const [grades, setGrades] = useState([]);
   const [gradesFetched, setGradesFetched] = useState(false);
+  const [gradeName, setGradeName] = useState('');
   const [topic, setTopic] = useState('');
   const [topics, setTopics] = useState([]);
   const [questionDetails, setQuestionDetails] = useState(
@@ -31,7 +33,9 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
   const handleSubjectChange = async (e) => {
     const selectedSubject = e.target.value;
+    const selectedSubjectName = subjects.find(subj => subj.id === selectedSubject).subject_name;
     setSubject(selectedSubject); // Set subject ID
+    setSubjectName(selectedSubjectName);
     setGrade(''); // Reset grade when subject changes
     setTopic('');
     setTopics([]); // Clear topics when subject changes
@@ -41,7 +45,9 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
   // Handle grade change
   const handleGradeChange = async (e) => {
     const selectedGrade = e.target.value;
+    const selectedGradeName = grades.find(grd => grd.id === selectedGrade).grade_name;
     setGrade(selectedGrade); // Set grade ID
+    setGradeName(selectedGradeName);
     setTopic('');
     await getTopics(subject, selectedGrade); // Fetch topics based on selected subject and grade
   };
@@ -209,7 +215,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       console.log(questionsArray, "questarr")
       if (Array.isArray(questionsArray) && questionsArray.length > 0) {
         handleGenerate(questionsArray, subject, grade);
-        onPrepareDownload(subject, grade, questionsArray);
+        onPrepareDownload(subjectName, gradeName, questionsArray);
         resetForm();
       }else{
         setAlertMessage("can't proceed with the request! please try again later!");
