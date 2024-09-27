@@ -146,29 +146,44 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
 
   // Start typing effect with formatted content
   simulateTyping(formattedContent);
-  setHistory(prevHistory => [...prevHistory, { date: new Date(), content: formattedContent, subject, grade }]);
-  }, [simulateTyping]);
-
-  const handleSelectFile = (selectedItem) => {
-    if (selectedItem) {
-      console.log('Selected Item:', selectedItem);
-      // Use an empty array if questionsArray is not present
-      const questionsArray = selectedItem.questionsArray ;
-      console.log('Questions Array:', questionsArray);
-  
-      setContent(selectedItem.content); // Use content from the selected item
-      setQuestionsArray(questionsArray); // Set questionsArray
-  
-      setIsEditorVisible(true);
-      setIsEditorDisabled(false);
+  console.log("resp", responseData);
+  setHistory(prevHistory => [
+    ...prevHistory,
+    {
+      date: new Date(),
+      content: formattedContent,
+      subject,
+      grade,
+      responseData:responseData, // Ensure this is set correctly
     }
-  };
-  
+  ]);
+}, [simulateTyping]);
+
+const handleSelectFile = (selectedItem) => {
+  if (selectedItem) {
+    console.log('Selected Item:', selectedItem);
+
+    setContent(selectedItem.content);
+    setPdfDetails({ subject: selectedItem.subject, grade: selectedItem.grade });
+
+    // Use a fallback to an empty array if questionsArray is null
+    // const questionsArray = selectedItem.questions || [];
+    // setQuestionsArray(questionsArray);
+
+    console.log("Subject:", selectedItem.subject);
+    console.log("Grade:", selectedItem.grade);
+    console.log("Questions Array:", selectedItem.responseData);
+    
+    setIsEditorVisible(true);
+    setIsEditorDisabled(false);
+  }
+};
+
 
     const handlePrepareDownload = (subject, grade, questions) => {
-      console.log('Subject:', subject);
-      console.log('Grade:', grade);
-      console.log('Questions Array:', questions);
+      // console.log('Subject:', subject);
+      // console.log('Grade:', grade);
+      // console.log('Questions Array :', questions);
     
       setPdfDetails({ subject, grade });
       
@@ -214,7 +229,7 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
           const number = parseInt(match[1], 10);
           const text = match[2].trim(); // Trim whitespace
           extractedQuestions[number] = text;
-          console.log(`Extracted Question Number: ${number}`); 
+          // console.log(`Extracted Question Number: ${number}`); 
         }
       });
     
@@ -266,12 +281,7 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
       return extractedAnswers;
     };
     
-    
-    
-    
-  
-    
-    
+ 
     const processQuestionsArray = (questionsArray, editorQuestions, editorAnswers) => {
       const objectiveQuestions = [];
       const matchQuestions = [];
@@ -296,7 +306,7 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
                 if (matchAnswer && matchAnswer.includes('⟷')) {
                   const pairs = matchAnswer.split('\n').map(pair => pair.split('⟷').map(item => item.trim()));
                   const tableRows = pairs.map(([left, right]) => `<tr><td class="border px-4 py-2">${left}</td><td class="border px-4 py-2">${right}</td></tr>`).join('');
-                  answers.push(`<table class="w-full border-collapse"><thead><tr><th class="border px-4 py-2">Left Label</th><th class="border px-4 py-2">Right Label</th></tr></thead><tbody>${tableRows}</tbody></table>`);
+                  answers.push(`<table class="w-full mt-3 border-collapse"><thead><tr><th class="border px-4 py-2">Left Label</th><th class="border px-4 py-2">Right Label</th></tr></thead><tbody>${tableRows}</tbody></table>`);
                 } else {
                   answers.push(` ${matchAnswer || 'N/A'}`);
                 }
@@ -314,8 +324,6 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
     
       return { objectiveQuestions, answers, matchQuestions, shortAnswerQuestions };
     };
-    
-    
     
     
     const printReport = () => {
@@ -389,7 +397,7 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
                 const rightLabelsMatch = question.match(/Right labels:\s*[\[\{](.*?)[\]\}]/);
                 return `
                   <h4 class="mt-2">${objectiveQuestions.length + index + 1}. ${introText}</h4>
-                  <table class="w-full border-collapse">
+                  <table class="w-full mt-3 border-collapse">
                     <thead>
                       <tr>
                         <th class="border px-4 py-2 text-left">Left Label</th>
@@ -509,6 +517,8 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
       pdf.save(`worksheet_${uuid}.pdf`);
 
       printWindow.close();
+
+      // alert('PDF downloaded successfully!');
     };
 
     // Close the print window when the cancel button is clicked
@@ -517,13 +527,6 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
     };
   };
 };
-
-    
-    
-    
-    
-    
-    
 
   return (
     <div className={`flex ${isDarkMode ? 'bg-gray-900' : 'bg-white'} text-gray-900`}>

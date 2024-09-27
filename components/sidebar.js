@@ -87,7 +87,7 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
                 <ul className="ml-10 mt-2">
                   {history.map((item) => (
                     <li key={item.date} className="mb-4">
-                      <a href="#" onClick={() => onSelectFile(item)}>
+                      <a href="#" onClick={() => { onSelectFile(item); toggleSidebar();}} >
                         Generated Question
                       </a>
                     </li>
@@ -134,16 +134,19 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
                 <strong>Step 1:</strong> Click on the &quot;Generate&quot; button, and a form will appear.
               </li>
               <li>
-                <strong>Step 2:</strong> Fill out the complete form. Select the subject, then the grade from the dropdown, and finally the template. If you select &quot;default,&quot; you can click on the generate button. If you select &quot;custom,&quot; 10 additional fields will appear. Fill them out and click &quot;Generate&quot; again.
+                <strong>Step 2:</strong> Fill out the complete form. Select the subject, then the grade and the topic from the dropdown, and finally the template. If you select &quot;default,&quot; you can click on the generate button. If you select &quot;custom,&quot; 10 additional fields will appear. Fill them out and click &quot;Generate&quot; again.
               </li>
               <li>
-                <strong>Step 3:</strong> After clicking &quot;Generate,&quot; you&apos;ll be taken to the editor where the questions will be displayed. <em>Note:</em> The download and close buttons will be disabled until all questions are generated.
+                <strong>Step 3:</strong> After clicking &quot;Generate,&quot; you&apos;ll be taken to the editor where the questions and answers along with the topic, blooms level, difficulty level will be displayed. <em>Note:</em> The preview and close buttons will be disabled until all questions are generated.
               </li>
               <li>
                 <strong>Step 4:</strong> Once all the questions are generated, you can edit them as needed.
               </li>
               <li>
-                <strong>Step 5:</strong> Finally, click the download button to generate a PDF with all the questions.
+                <strong>Step 5:</strong> Then, click on the preview button which will display the preview of your pdf and it will also have a cancel and download button.
+              </li>
+              <li>
+                <strong>Step 6:</strong> Finally, click on download button to generate a pdf with all questions and answers. And in case you want to revert back to the editor and make some changes then you can click on the cancel button.
               </li>
             </ul>
             <div className="flex justify-end mt-4 md:mt-6">

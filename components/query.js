@@ -24,7 +24,7 @@ export const fetchSubjects = async () => {
   
     try {
       const data = await client.request(query);
-      console.log(data, "sdata");
+    //   console.log(data, "sdata");
       return data.subjects;
     } catch (error) {
       console.error("Error fetching subjects:", error.response?.errors || error);
@@ -45,7 +45,7 @@ export const fetchSubjects = async () => {
 
     try{
         const data = await client.request(query);
-        console.log(data, "gdata")
+        // console.log(data, "gdata")
         return data.grades;
     } catch (error) {
         console.error("Error fetching grades:", error.response?.errors || error);
