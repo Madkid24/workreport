@@ -6,7 +6,7 @@ import { fetchGrades, fetchSubjects, fetchTopics } from './query';
 
 
 
-const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateChange, onPrepareDownload }) => {
+const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateChange, onPrepareDownload, onUpdateSubjectAndGrade }) => {
   const [subject, setSubject] = useState('');
   const [subjects, setSubjects] = useState([]);
   const [subjectsFetched, setSubjectsFetched] = useState(false);
@@ -28,8 +28,33 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
   const [loading, setLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const MAX_MCQ_FITB = 3; // Maximum for MCQ and Fill in the blank
+  const MAX_SHORT_MATCH = 2; // Maximum for Short answer and Match the following
+
 
   if (!isOpen) return null;
+
+  const countQuestionTypes = (questionDetails) => {
+    return questionDetails.reduce(
+      (acc, curr) => {
+        if (curr.questionType === "Fill in the blank") {
+          acc.fitb += 1;
+        } else if (curr.questionType === "MCQ") {
+          acc.mcq += 1;
+        } else if (curr.questionType === "Short answer") {
+          acc.short += 1;
+        } else if (curr.questionType === "Match the following") {
+          acc.match += 1;
+        }
+        return acc;
+      },
+      { fitb: 0, mcq: 0, short: 0, match: 0 }
+    );
+  };
+
+  const { fitb, mcq, short, match } = countQuestionTypes(questionDetails);
+
+  
 
   const handleSubjectChange = async (e) => {
     const selectedSubject = e.target.value;
@@ -52,13 +77,43 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     await getTopics(subject, selectedGrade); // Fetch topics based on selected subject and grade
   };
 
-  const handleTopicChange = (e) => setTopic(e.target.value);
+  const handleTopicChange = (e) => {
+    const selectedTopicId = e.target.value;
+    setTopic(selectedTopicId);
+  }
 
   const handleDetailChange = (index, field, value) => {
-    const updatedDetails = [...questionDetails];
-    updatedDetails[index][field] = value;
-    setQuestionDetails(updatedDetails);
+    // Check if the value is being changed to a question type
+    if (field === 'questionType') {
+      const updatedDetails = [...questionDetails];
+  
+      // Get the current counts of question types
+      const { fitb, mcq, short, match } = countQuestionTypes(updatedDetails);
+  
+      // Allow selection based on the maximum limits
+      if (value === "Fill in the blank" && fitb < MAX_MCQ_FITB) {
+        updatedDetails[index][field] = value; // Update the question type
+      } else if (value === "MCQ" && mcq < MAX_MCQ_FITB) {
+        updatedDetails[index][field] = value; // Update the question type
+      } else if (value === "Short answer" && short < MAX_SHORT_MATCH) {
+        updatedDetails[index][field] = value; // Update the question type
+      } else if (value === "Match the following" && match < MAX_SHORT_MATCH) {
+        updatedDetails[index][field] = value; // Update the question type
+      } else {
+        // Limit reached, do not update the state
+        return; // Exit the function to prevent updating
+      }
+  
+      // Update the question details with the modified array
+      setQuestionDetails(updatedDetails);
+    } else {
+      // If the field is not questionType, update as usual
+      const updatedDetails = [...questionDetails];
+      updatedDetails[index][field] = value;
+      setQuestionDetails(updatedDetails);
+    }
   };
+  
 
   const getSubjects = async () => {
     try {
@@ -131,7 +186,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     setLoading(true);
     const subjectId = subject;
     const gradeId = grade; 
-    const topic = document.getElementById('topic')?.value;
+    const topicId = topic;
     const template = document.getElementById('template')?.value;
 
     if (!subjectId) {
@@ -146,7 +201,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       return;
     }
 
-    if (!topic) {
+    if (!topicId) {
       setAlertMessage('Topic is missing');
       setLoading(false);
       return;
@@ -183,12 +238,12 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     const formData = {
       subject: subjectId,
       grade: gradeId,
-      topic,
+      topic: topicId,
       template: template === 'custom' ? 'custom' : 'default',
       workSheetDetails,
     };
 
-    // console.log('Form Data:', formData);
+    console.log('Form Data:', formData);
 
     try {
       const aiAuthToken = process.env.NEXT_PUBLIC_AI_AUTH_TOKEN;
@@ -202,16 +257,18 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
         body: JSON.stringify(formData),
       });
 
-      // console.log(response, 'res');
+      console.log(response, 'res');
 
       if (!response.ok) {
         setAlertMessage('cannot proceed with the request! please try again later!');
       }
 
       const responseData = await response.json();
-      // console.log('Response from backend:', responseData);
+      console.log('Response from backend:', responseData);
 
       const questionsArray = responseData?.content?.airesponse || responseData?.content?.response || [];
+
+      const questionId = responseData?.question_inserted_id
 
       // const questionsArray = [
       //   {
@@ -220,8 +277,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       //     Answer: '3.14',
       //     QuestionType: 'MCQ',
       //     QuestionTopic: 'Mensuration',
-      //     BloomsLevel: 'Understanding',
-      //     DifficultyLevel: 'Hard',
+          
       //   },
       //   {
       //     QuestionNumber: 2,
@@ -309,7 +365,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       // 
       // console.log(questionsArray, "questarr")
       if (Array.isArray(questionsArray) && questionsArray.length > 0) {
-        handleGenerate(questionsArray, subjectName, gradeName);
+        handleGenerate(questionsArray,questionId, subjectName, gradeName);
         onPrepareDownload(subjectName, gradeName, questionsArray);
         resetForm();
       }else{
@@ -367,7 +423,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
             <>
               <option value="" disabled>Select Topic</option>
               {topics.map((top) => (
-                <option key={top.id} value={top.topic_name}>{top.topic_name}</option>
+                <option key={top.id} value={top.id}>{top.topic_name}</option>
               ))}
             </>
           )}
@@ -412,10 +468,10 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
                     onChange={(e) => handleDetailChange(index, 'questionType', e.target.value)}
                   >
                     <option value="" disabled>Select Type</option>
-                    <option value="Fill in the blank">Fill in the blank</option>
-                    <option value="MCQ">MCQ</option>
-                    <option value="Short answer">Short answer</option>
-                    <option value="Match the following">Match the Following</option>
+                    <option value="Fill in the blank" disabled={fitb >= MAX_MCQ_FITB}>Fill in the blank</option>
+                    <option value="MCQ" disabled={mcq >= MAX_MCQ_FITB}>MCQ</option>
+                    <option value="Short answer" disabled={short >= MAX_SHORT_MATCH}>Short answer</option>
+                    <option value="Match the following" disabled={match >= MAX_SHORT_MATCH}>Match the Following</option>
                   </select>
                 </div>
                 <div className="flex-1">
@@ -459,7 +515,10 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
         <div className="flex justify-end">
           <button
             type="button"
-            onClick={handleClose}
+            onClick={() => {
+              handleClose();
+              resetForm();
+            }}
             className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 mr-2"
           >
             Cancel

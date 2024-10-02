@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWandSparkles, faBars} from '@fortawesome/free-solid-svg-icons';
+import { faWandSparkles, faBars, faSpinner} from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';
 import SunEditor from "suneditor-react";
 import "suneditor/dist/css/suneditor.min.css";
@@ -13,10 +13,11 @@ import Sidebar from '/components/sidebar';
 import Modal from '/components/modal';
 import Link from 'next/link';
 import html2canvas from 'html2canvas';
+import { fetchHistory, insertHistory, fetchUsers, updateQuestionDetails } from '/components/query';
 
 
 const LandingPage = () => {
-  
+  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const componentPdf = useRef(null);
   const [template, setTemplate] = useState('');
@@ -27,14 +28,9 @@ const LandingPage = () => {
   const [questionsArray, setQuestionsArray] = useState(null);
   const contentRef = useRef(null);
   const [isEditorDisabled, setIsEditorDisabled] = useState(true);
-  const [history, setHistory] = useState(() => {
-  if (typeof window !== 'undefined') {
-    // Load history from localStorage on the client side
-    const savedHistory = localStorage.getItem('history');
-    return savedHistory ? JSON.parse(savedHistory) : [];
-  }
-  return []; // Return an empty array on the server side
-});
+  const [history, setHistory] = useState([]);
+  // const [userId, setUserId] = useState(null);
+  const userId = "971944d1-31ea-4442-aea5-d71533ac3953"
   const [selectedFileIndex, setSelectedFileIndex] = useState(null); 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -44,8 +40,10 @@ const LandingPage = () => {
     return false; // Default value if localStorage is not available
   }); 
   const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date))// New state for typing simulation
-
+  const filteredHistory = history.filter(item => item.content);
   const limitedHistory = sortedHistory.slice(0, 5);
+
+  
 
   const simulateTyping = useCallback((text, interval = 30) => {
     let index = 0;
@@ -71,6 +69,34 @@ const LandingPage = () => {
     }
   }, [content]);
 
+  // useEffect(() => {
+  //   const getUsers = async () => {
+  //     try {
+  //       const userData = await fetchUsers();
+  //       setUserId(userData[0].id);
+  //     } catch(error) {
+  //       console.error("Error fetching user id:", error);
+  //     }
+  //   };
+  //   getUsers();
+  // });
+
+  useEffect(() => {
+    // Only fetch history if userId is set and valid
+    if (userId) {
+      const getHistory = async () => {
+        try {
+          const historyData = await fetchHistory(userId);
+          setHistory(historyData);
+        } catch (error) {
+          console.error("Error fetching history:", error);
+        }
+      };
+  
+      getHistory();
+    }
+  }, [userId]); 
+
 //   const handlePreview = () => {
 //     const editorQuestions = extractQuestionsFromEditor();
 //     const categorizedQuestions = processQuestionsArray(questionsArray, editorQuestions);
@@ -93,13 +119,7 @@ const LandingPage = () => {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-  useEffect(() => {
-    if (history.length > 0) {
-      localStorage.setItem('history', JSON.stringify(history));
-      console.log('History updated:', history);
-    }
-  }, [history]);
-
+ 
   const toggleDarkMode = () => {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
@@ -107,46 +127,158 @@ const LandingPage = () => {
     localStorage.setItem('isDarkMode', newDarkMode.toString());
 };
 
-const handleGenerate = useCallback((responseData, subject, grade) => {
+// const handleGenerate = useCallback(async (responseData, subject, grade) => {
+//   setIsModalOpen(false); // Close the modal
+//   setIsEditorVisible(true); // Show the SunTextEditor
+//   setContent(''); // Reset content
+//   console.log("resp", responseData)
+
+//   // Ensure responseData is parsed into an object before processing
+//   const parsedResponseData = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
+   
+//   const formattedContent = parsedResponseData
+//     .map(item => {
+//       let answerContent = '';
+
+//       if (item.QuestionType === 'Match the following') {
+//         // Extract left and right labels from the answer array
+//         const leftLabels = item.Answer.map((pair, index) => pair[`${index + 1}_leftlabel`]);
+//         const rightLabels = item.Answer.map((pair, index) => pair[`${index + 1}_rightlabel`]);
+
+//         // Shuffle left labels
+//         const shuffledLeftLabels = [...leftLabels].sort(() => Math.random() - 0.5);
+
+//         // Create answer pairs based on the original right labels using the shuffled left labels
+//         const matchPairs = shuffledLeftLabels.map((shuffledLeft, index) => {
+//           const originalIndex = leftLabels.indexOf(shuffledLeft); // Find the original index of the left label
+//           const correspondingRight = rightLabels[originalIndex]; // Get the corresponding right label
+//           return `${shuffledLeft} ⟷ ${correspondingRight}`; // Create the answer pair
+//         }).join('<br>');
+
+//         // Format the answer content with the question number and question text
+//         answerContent = `
+//           <b>Question ${item.QuestionNumber}:</b> Match the following -
+//           Left labels: [${shuffledLeftLabels.join(', ')}] 
+//           Right labels: [${rightLabels.join(', ')}], <br>
+//           <b>Answer:</b><br>${matchPairs}
+//         `;
+//       } else {
+//         // For other question types, display the answer as it is
+//         answerContent = `
+//           <b>Question ${item.QuestionNumber}:</b> ${item.Question}<br>
+//           <b>Answer:</b> ${item.Answer}
+//         `;
+//       }
+
+//       return `
+//         <div>
+//           <b>Topic:</b> ${item.QuestionTopic}<br>
+//           <b>Blooms Level:</b> ${item.BloomsLevel}<br>
+//           <b>Difficulty Level:</b> ${item.DifficultyLevel}<br>
+//           ${answerContent}  <!-- This includes the question number and question -->
+//         </div>
+//         <br>
+//       `;
+//     })
+//     .join('');
+
+//   try {
+//     // Ensure insertHistory is defined and takes these parameters
+//     await insertHistory(userId, formattedContent, subject, grade, parsedResponseData); // Pass the parsed responseData here
+//   } catch (error) {
+//     console.error("Error inserting history:", error);
+//   }
+
+//   // Start typing effect with formatted content
+//   simulateTyping(formattedContent);
+
+//   // Update the local history state
+//   setHistory(prevHistory => [
+//     ...prevHistory,
+//     {
+//       date: new Date(),
+//       content: formattedContent,
+//       subject,
+//       grade,
+//       responseData: parsedResponseData, // Ensure this is set correctly as grouped data
+//     },
+//   ]);
+// }, [simulateTyping, insertHistory, userId]);
+
+const handleGenerate = useCallback(async (responseData, questionId, subject, grade) => {
   setIsModalOpen(false); // Close the modal
   setIsEditorVisible(true); // Show the SunTextEditor
   setContent(''); // Reset content
-  // setIsEditorDisabled(true);
+  console.log("resp", responseData);
+  console.log("questionsid", questionId);
+  console.log("subject", subject);
+  console.log("grade0", grade);
 
-  const formattedContent = responseData
+  // Ensure responseData is parsed into an object before processing
+  const parsedResponseData = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
+
+  const formattedContent = parsedResponseData
     .map(item => {
       let answerContent = '';
 
       if (item.QuestionType === 'Match the following') {
-        // For "Match the following", format the left and right labels
-        const matchPairs = item.Answer.map((pair, index) => {
-          const leftLabel = pair[`${index + 1}_leftlabel`];
-          const rightLabel = pair[`${index + 1}_rightlabel`];
-          return `${leftLabel} ⟷ ${rightLabel}`;
+        // Extract left and right labels from the answer array
+        const leftLabels = item.Answer.map((pair, index) => pair[`${index + 1}_leftlabel`]);
+        const rightLabels = item.Answer.map((pair, index) => pair[`${index + 1}_rightlabel`]);
+
+        // Shuffle left labels
+        const shuffledLeftLabels = [...leftLabels].sort(() => Math.random() - 0.5);
+
+        // Create answer pairs based on the original right labels using the shuffled left labels
+        const matchPairs = shuffledLeftLabels.map((shuffledLeft, index) => {
+          const originalIndex = leftLabels.indexOf(shuffledLeft); // Find the original index of the left label
+          const correspondingRight = rightLabels[originalIndex]; // Get the corresponding right label
+          return `${shuffledLeft} ⟷ ${correspondingRight}`; // Create the answer pair
         }).join('<br>');
 
-        answerContent = `<b>Answer:</b><br>${matchPairs}`;
+        // Format the answer content with the question number and question text
+        answerContent = `
+          <b>Question ${item.QuestionNumber}:</b> Match the following -
+          Left labels: [${shuffledLeftLabels.join(', ')}] 
+          Right labels: [${rightLabels.join(', ')}], <br>
+          <b>Answer:</b><br>${matchPairs}
+        `;
       } else {
         // For other question types, display the answer as it is
-        answerContent = `<b>Answer:</b> ${item.Answer}`;
+        answerContent = `
+          <b>Question ${item.QuestionNumber}:</b> ${item.Question}<br>
+          <b>Answer:</b> ${item.Answer}
+        `;
       }
 
       return `
-          <div>
-            <b>Topic:</b> ${item.QuestionTopic}<br>
-            <b>Blooms Level:</b> ${item.BloomsLevel}<br>
-            <b>Difficulty Level:</b> ${item.DifficultyLevel}<br>
-            <b>Question ${item.QuestionNumber}:</b> ${item.Question}<br>
-            ${answerContent}
-          </div>
-          <br>
-        `;
+        <div>
+          <b>Topic:</b> ${item.QuestionTopic}<br>
+          <b>Blooms Level:</b> ${item.BloomsLevel}<br>
+          <b>Difficulty Level:</b> ${item.DifficultyLevel}<br>
+          ${answerContent}  <!-- This includes the question number and question -->
+        </div>
+        <br>
+      `;
     })
     .join('');
 
+  try {
+   
+   // If the question ID exists, update the content, subject, and grade in the `questions` table
+    if (questionId) {
+      await updateQuestionDetails(questionId, formattedContent);
+    } else {
+      console.error("No question ID found in the response data.");
+    }
+  } catch (error) {
+    console.error("Error updating question details:", error);
+  }
+
   // Start typing effect with formatted content
   simulateTyping(formattedContent);
-  console.log("resp", responseData);
+
+  // Update the local history state
   setHistory(prevHistory => [
     ...prevHistory,
     {
@@ -154,37 +286,71 @@ const handleGenerate = useCallback((responseData, subject, grade) => {
       content: formattedContent,
       subject,
       grade,
-      responseData:responseData, // Ensure this is set correctly
-    }
+      responseData: parsedResponseData, // Ensure this is set correctly as grouped data
+    },
   ]);
-}, [simulateTyping]);
+}, [simulateTyping, updateQuestionDetails,userId]);
+
 
 const handleSelectFile = (selectedItem) => {
   if (selectedItem) {
     console.log('Selected Item:', selectedItem);
 
-    setContent(selectedItem.content);
-    setPdfDetails({ subject: selectedItem.subject, grade: selectedItem.grade });
+    const { content, subject, grade, questions } = selectedItem;
+    console.log("respdata", selectedItem.questions)
 
-    // Use a fallback to an empty array if questionsArray is null
-    // const questionsArray = selectedItem.questions || [];
-    // setQuestionsArray(questionsArray);
+    // Set content, subject, and grade from the selected item
+    setContent(content);
+    setPdfDetails({ subject, grade });
 
-    console.log("Subject:", selectedItem.subject);
-    console.log("Grade:", selectedItem.grade);
-    console.log("Questions Array:", selectedItem.responseData);
-    
+    // Group the questions if not already grouped
+    const groupedQuestions = {
+      mcq: [],
+      fillInTheBlank: [],
+      match: [],
+      shortAnswer: [],
+    };
+
+    // Ensure responseData is parsed before processing
+    const parsedResponseData = typeof questions === 'string' ? JSON.parse(questions) : questions;
+
+    if (parsedResponseData && parsedResponseData.length > 0) {
+      parsedResponseData.forEach(question => {
+        switch (question.QuestionType) {
+          case 'MCQ':
+          case 'Fill in the blank':
+            groupedQuestions.mcq.push(question);
+            break;
+          case 'Match the following':
+            groupedQuestions.match.push(question);
+            break;
+          case 'Short answer':
+            groupedQuestions.shortAnswer.push(question);
+            break;
+          default:
+            console.error(`Unknown question type: ${question.QuestionType}`);
+        }
+      });
+    }
+
+    // Update state with grouped questions
+    setQuestionsArray(groupedQuestions);
+
+    // Show the editor
     setIsEditorVisible(true);
     setIsEditorDisabled(false);
+
+    console.log("Content:", content);
+    console.log("Subject:", subject);
+    // console.log("Grade:", grade);
+    // console.log("Grouped Questions:", groupedQuestions);
+  } else {
+    console.error("No item selected");
   }
 };
 
 
     const handlePrepareDownload = (subject, grade, questions) => {
-      // console.log('Subject:', subject);
-      // console.log('Grade:', grade);
-      // console.log('Questions Array :', questions);
-    
       setPdfDetails({ subject, grade });
       
       const groupedQuestions = {
@@ -400,8 +566,8 @@ const handleSelectFile = (selectedItem) => {
                   <table class="w-full mt-3 border-collapse">
                     <thead>
                       <tr>
-                        <th class="border px-4 py-2 text-left">Left Label</th>
-                        <th class="border px-4 py-2 text-left">Right Label</th>
+                        <th class="border px-4 py-2 text-center">Left Label</th>
+                        <th class="border px-4 py-2 text-center">Right Label</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -494,7 +660,9 @@ const handleSelectFile = (selectedItem) => {
     printWindow.document.body.appendChild(cancelBtn);
 
     downloadBtn.onclick = async () => {
-      const pdf = new jsPDF();
+      const width = 210; // A3 width in mm
+      const height = 420; // A3 height in mm
+      const pdf = new jsPDF({format: [width, height]});
 
       // Capture questions box as image
       const questionsContainer = printWindow.document.getElementById('questions-container');
@@ -517,6 +685,7 @@ const handleSelectFile = (selectedItem) => {
       pdf.save(`worksheet_${uuid}.pdf`);
 
       printWindow.close();
+      setLoading(false);
 
       // alert('PDF downloaded successfully!');
     };
@@ -524,6 +693,7 @@ const handleSelectFile = (selectedItem) => {
     // Close the print window when the cancel button is clicked
     cancelBtn.onclick = () => {
       printWindow.close();
+      setLoading(false);
     };
   };
 };
@@ -628,16 +798,29 @@ const handleSelectFile = (selectedItem) => {
             <div className="absolute top-4 right-4 md:top-3 md:right-8 z-30 bg-white rounded-md flex space-x-2">
             
 
-    {/* Trigger Print Button */}
+            {/* Trigger Print Button */}
             <button
-                onClick={printReport}
+                onClick={() => {
+                  setLoading(true);
+                  setTimeout(() => {
+                    printReport(); // Call the function after 3 seconds
+                  }, 1000); // 3000 milliseconds = 3 seconds
+                }}
                 disabled={isEditorDisabled}
                 className={`flex items-center px-3 py-1 md:px-4 md:py-2 bg-[#0c4b6e] text-white rounded-full shadow-sm text-sm md:text-base ${
                   isEditorDisabled ? 'opacity-15 cursor-not-allowed' : 'opacity-100'
                 }`}
             >
+              {loading ? (
+              <>
+                <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+              </>
+            ) : (
+              <>
                 Preview PDF
-            </button>
+              </>
+            )}
+          </button>
               <button
                 onClick={() => setIsEditorVisible(false)}
                 disabled={isEditorDisabled}

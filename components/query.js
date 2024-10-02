@@ -11,6 +11,25 @@ const client = new GraphQLClient(endpoint, {
   },
 });
 
+// Get User
+export const fetchUsers = async () => {
+  const query = gql`
+    query GetUserId {
+      users {
+        id
+        name
+      }
+    }
+  `;
+
+  try {
+    const data = await client.request(query);
+    return data.users; // Return the array of users
+  } catch (error) {
+    console.error("Error fetching users:", error.response?.errors || error);
+  }
+};
+
 export const fetchSubjects = async () => {
     
     const query = gql`
@@ -29,6 +48,27 @@ export const fetchSubjects = async () => {
     } catch (error) {
       console.error("Error fetching subjects:", error.response?.errors || error);
       throw error;
+    }
+  };
+
+  export const fetchSubjectAndGradeFromQuestionID = async (questionId) => {
+    const query = gql`
+      query GetSubjectAndGrade($id: uuid!) {
+        questions_by_pk(id: $id) {
+          subject_id
+          grade_id
+        }
+      }
+    `;
+  
+    try {
+      const variables = { id: questionId }; // Pass the questionId as a variable
+      const data = await client.request(query, variables);
+      console.log(data, "subject and grade");
+      return data.questions_by_pk; // Return the subject and grade
+    } catch (error) {
+      console.error("Error fetching subject and grade:", error.response?.errors || error);
+      return null; // Return null in case of an error
     }
   };
 
@@ -71,3 +111,83 @@ export const fetchSubjects = async () => {
       throw error;
     }
   };
+
+//Insert History
+// export const insertHistory = async (user_id, content, subject, grade, responseData) => {
+//   // Ensure that responseData is properly serialized
+//   const serializedResponseData = JSON.stringify(responseData); // Convert responseData to JSON string if needed
+
+//   const mutation = gql`
+//     mutation InsertHistory($user_id: uuid!, $content: String!, $subject: String!, $grade: Int, $responseData: String!) {
+//       insert_history(objects: { 
+//         user_id: $user_id, 
+//         content: $content, 
+//         subject: $subject, 
+//         grade: $grade, 
+//         date: "now()", 
+//         responseData: $responseData 
+//       }) {
+//         returning {
+//           id
+//           date
+//           content
+//           subject
+//           grade
+//           responseData
+//         }
+//       }
+//     }
+//   `;
+
+//   try {
+//     const data = await client.request(mutation, { user_id, content, subject, grade, responseData: serializedResponseData });
+//     return data.insert_history.returning;
+//   } catch (error) {
+//     console.error("Error Inserting History", error.response?.errors || error);
+//   }
+// };
+
+
+export const updateQuestionDetails = async (id, content) => {
+  const mutation = gql`
+    mutation UpdateQuestionDetails($id: uuid!, $content: String!) {
+      update_questions_by_pk(
+        pk_columns: { id: $id }, 
+        _set: { content: $content }
+      ) {
+        id
+        content
+        updated_at
+      }
+    }
+  `;
+
+  try {
+    const data = await client.request(mutation, { id, content});
+    return data.update_questions_by_pk;
+  } catch (error) {
+    console.error("Error updating question details", error.response?.errors || error);
+  }
+};
+
+export const fetchHistory = async (user_id) => {
+  const query = gql`
+    query GetQuestions($user_id: uuid!) {
+      questions(where: { user_id: { _eq: $user_id } }, order_by: { updated_at: desc }) {
+        id
+        content
+        created_at
+        updated_at
+        questions 
+      }
+    }
+  `;
+
+  try {
+    const data = await client.request(query, { user_id });
+    return data.questions; // Return the list of questions for this user
+  } catch (error) {
+    console.error("Error fetching questions:", error.response?.errors || error);
+  }
+};
+

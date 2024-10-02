@@ -8,6 +8,8 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
 
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  // const filteredHistory = history.filter(item => item.content);
+
   // Function to show the modal
   const showModal = () => {
     setIsModalVisible(true);
@@ -21,6 +23,7 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
   const handleExploreHistoryClick = () => {
     setIsHistoryListVisible(prev => !prev);
   };
+  
 
 
   return (
@@ -39,7 +42,7 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
               </a>
               {isHistoryListVisible && (
                 <ul className="ml-16 mt-2">
-                  {history.map((item) => (
+                  {history.map(item => (
                     <li key={item.date} className="mb-4">
                       <a href="#" onClick={() => onSelectFile(item)}>
                         Generated Question
@@ -85,7 +88,7 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
               </a>
               {isHistoryListVisible && (
                 <ul className="ml-10 mt-2">
-                  {history.map((item) => (
+                  {history.map(item => (
                     <li key={item.date} className="mb-4">
                       <a href="#" onClick={() => { onSelectFile(item); toggleSidebar();}} >
                         Generated Question
@@ -134,7 +137,7 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
                 <strong>Step 1:</strong> Click on the &quot;Generate&quot; button, and a form will appear.
               </li>
               <li>
-                <strong>Step 2:</strong> Fill out the complete form. Select the subject, then the grade and the topic from the dropdown, and finally the template. If you select &quot;default,&quot; you can click on the generate button. If you select &quot;custom,&quot; 10 additional fields will appear. Fill them out and click &quot;Generate&quot; again.
+                <strong>Step 2:</strong> Fill out the complete form. Select the subject, grade, and topic from the dropdown, and then choose the template. If you select &quot;default,&quot; you can click on the generate button immediately. If you select &quot;custom,&quot; 10 additional fields will appear. Fill them out, then click &quot;Generate&quot; again. <em>Note:</em> While filling in the 10 additional fields, there is a limit on question type selection: You can choose only three questions each for MCQ and Fill in the Blank, and only two questions each for Short Answer and Match the Following.
               </li>
               <li>
                 <strong>Step 3:</strong> After clicking &quot;Generate,&quot; you&apos;ll be taken to the editor where the questions and answers along with the topic, blooms level, difficulty level will be displayed. <em>Note:</em> The preview and close buttons will be disabled until all questions are generated.
