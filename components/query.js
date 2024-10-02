@@ -191,3 +191,42 @@ export const fetchHistory = async (user_id) => {
   }
 };
 
+export const fetchSubjectById = async (subjectId) => {
+  const query = gql`
+    query GetSubjectById($id: uuid!) {
+      subjects_by_pk(id: $id) {
+        subject_name
+      }
+    }
+  `;
+
+  try {
+    const variables = { id: subjectId };
+    const data = await client.request(query, variables);
+    return data.subjects_by_pk?.subject_name; // Assuming the subject table has a `name` field
+  } catch (error) {
+    console.error("Error fetching subject:", error.response?.errors || error);
+    return null; // Return null in case of an error
+  }
+};
+
+export const fetchGradeById = async (gradeId) => {
+  const query = gql`
+    query GetGradeById($id: uuid!) {
+      grades_by_pk(id: $id) {
+        grade_name
+      }
+    }
+  `;
+
+  try {
+    const variables = { id: gradeId };
+    const data = await client.request(query, variables);
+    return data.grades_by_pk?.grade_name; // Assuming the grade table has a `name` field
+  } catch (error) {
+    console.error("Error fetching grade:", error.response?.errors || error);
+    return null; // Return null in case of an error
+  }
+};
+
+

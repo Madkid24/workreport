@@ -13,7 +13,7 @@ import Sidebar from '/components/sidebar';
 import Modal from '/components/modal';
 import Link from 'next/link';
 import html2canvas from 'html2canvas';
-import { fetchHistory, insertHistory, fetchUsers, updateQuestionDetails } from '/components/query';
+import { fetchHistory, insertHistory, fetchUsers, updateQuestionDetails, fetchSubjectAndGradeFromQuestionID,fetchSubjectById, fetchGradeById } from '/components/query';
 
 
 const LandingPage = () => {
@@ -205,14 +205,27 @@ const LandingPage = () => {
 //   ]);
 // }, [simulateTyping, insertHistory, userId]);
 
-const handleGenerate = useCallback(async (responseData, questionId, subject, grade) => {
+const handleGenerate = useCallback(async (responseData, questionId) => {
   setIsModalOpen(false); // Close the modal
   setIsEditorVisible(true); // Show the SunTextEditor
   setContent(''); // Reset content
   console.log("resp", responseData);
   console.log("questionsid", questionId);
+
+  // Fetch subject and grade based on the questionId
+  const data = await fetchSubjectAndGradeFromQuestionID(questionId)
+  console.log("Fetched Data from fetchSubjectAndGrade:", data);
+  const subject_id = data?.subject_id; // Use optional chaining for safety
+  const grade_id = data?.grade_id;     // Correctly extracting grade_id
+
+  console.log("subject_id", subject_id);
+  console.log("grade_id", grade_id);
+
+  const subject = subject_id ? await fetchSubjectById(subject_id) : null;
+  const grade = grade_id ? await fetchGradeById(grade_id) : null;
+
   console.log("subject", subject);
-  console.log("grade0", grade);
+  console.log("grade", grade);
 
   // Ensure responseData is parsed into an object before processing
   const parsedResponseData = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
@@ -292,58 +305,74 @@ const handleGenerate = useCallback(async (responseData, questionId, subject, gra
 }, [simulateTyping, updateQuestionDetails,userId]);
 
 
-const handleSelectFile = (selectedItem) => {
+const handleSelectFile = async(selectedItem) => {
   if (selectedItem) {
     console.log('Selected Item:', selectedItem);
 
-    const { content, subject, grade, questions } = selectedItem;
+    const { content, id: questionId, questions } = selectedItem;
     console.log("respdata", selectedItem.questions)
 
     // Set content, subject, and grade from the selected item
-    setContent(content);
-    setPdfDetails({ subject, grade });
+    try {
+      const data = await fetchSubjectAndGradeFromQuestionID(questionId)
+  console.log("Fetched Data from fetchSubjectAndGrade:", data);
+  const subject_id = data?.subject_id; // Use optional chaining for safety
+  const grade_id = data?.grade_id;     // Correctly extracting grade_id
 
-    // Group the questions if not already grouped
-    const groupedQuestions = {
-      mcq: [],
-      fillInTheBlank: [],
-      match: [],
-      shortAnswer: [],
-    };
+  console.log("subject_id", subject_id);
+  console.log("grade_id", grade_id);
 
-    // Ensure responseData is parsed before processing
-    const parsedResponseData = typeof questions === 'string' ? JSON.parse(questions) : questions;
+  const subject = subject_id ? await fetchSubjectById(subject_id) : null;
+  const grade = grade_id ? await fetchGradeById(grade_id) : null;
 
-    if (parsedResponseData && parsedResponseData.length > 0) {
-      parsedResponseData.forEach(question => {
-        switch (question.QuestionType) {
-          case 'MCQ':
-          case 'Fill in the blank':
-            groupedQuestions.mcq.push(question);
-            break;
-          case 'Match the following':
-            groupedQuestions.match.push(question);
-            break;
-          case 'Short answer':
-            groupedQuestions.shortAnswer.push(question);
-            break;
-          default:
-            console.error(`Unknown question type: ${question.QuestionType}`);
-        }
-      });
+  console.log("subject", subject);
+  console.log("grade", grade);
+
+      // Update the content and PDF details
+      setContent(content);
+      setPdfDetails({ subject, grade });
+
+      // Group the questions (if necessary)
+      const groupedQuestions = {
+        mcq: [],
+        fillInTheBlank: [],
+        match: [],
+        shortAnswer: [],
+      };
+
+      const parsedQuestions = typeof questions === 'string' ? JSON.parse(questions) : questions;
+
+      if (parsedQuestions && parsedQuestions.length > 0) {
+        parsedQuestions.forEach((question) => {
+          switch (question.QuestionType) {
+            case 'MCQ':
+              groupedQuestions.mcq.push(question);
+              break;
+            case 'Fill in the blank':
+              groupedQuestions.fillInTheBlank.push(question);
+              break;
+            case 'Match the following':
+              groupedQuestions.match.push(question);
+              break;
+            case 'Short answer':
+              groupedQuestions.shortAnswer.push(question);
+              break;
+            default:
+              console.error(`Unknown question type: ${question.QuestionType}`);
+          }
+        });
+      }
+
+      setQuestionsArray(groupedQuestions);
+      setIsEditorVisible(true);
+      setIsEditorDisabled(false);
+
+      console.log("Fetched Subject:", subject);
+      console.log("Fetched Grade:", grade);
+
+    } catch (error) {
+      console.error('Error fetching subject or grade:', error);
     }
-
-    // Update state with grouped questions
-    setQuestionsArray(groupedQuestions);
-
-    // Show the editor
-    setIsEditorVisible(true);
-    setIsEditorDisabled(false);
-
-    console.log("Content:", content);
-    console.log("Subject:", subject);
-    // console.log("Grade:", grade);
-    // console.log("Grouped Questions:", groupedQuestions);
   } else {
     console.error("No item selected");
   }

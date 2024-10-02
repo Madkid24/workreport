@@ -365,7 +365,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       // 
       // console.log(questionsArray, "questarr")
       if (Array.isArray(questionsArray) && questionsArray.length > 0) {
-        handleGenerate(questionsArray,questionId, subjectName, gradeName);
+        handleGenerate(questionsArray,questionId);
         onPrepareDownload(subjectName, gradeName, questionsArray);
         resetForm();
       }else{
