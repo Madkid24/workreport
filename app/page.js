@@ -291,17 +291,20 @@ const handleGenerate = useCallback(async (responseData, questionId) => {
   // Start typing effect with formatted content
   simulateTyping(formattedContent);
 
+  const historyData = await fetchHistory(userId);
+  setHistory(historyData);
+
   // Update the local history state
-  setHistory(prevHistory => [
-    ...prevHistory,
-    {
-      date: new Date(),
-      content: formattedContent,
-      subject,
-      grade,
-      responseData: parsedResponseData, // Ensure this is set correctly as grouped data
-    },
-  ]);
+  // setHistory(prevHistory => [
+  //   ...prevHistory,
+  //   {
+  //     date: new Date(),
+  //     content: formattedContent,
+  //     subject,
+  //     grade,
+  //     responseData: parsedResponseData, // Ensure this is set correctly as grouped data
+  //   },
+  // ]);
 }, [simulateTyping, updateQuestionDetails,userId]);
 
 
