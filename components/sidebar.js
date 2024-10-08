@@ -8,6 +8,20 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
 
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+  
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+  };
+
   // const filteredHistory = history.filter(item => item.content);
 
   // Function to show the modal
@@ -41,16 +55,21 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
                 <span className="ml-2">Explore History</span>
               </a>
               {isHistoryListVisible && (
-                <ul className="ml-16 mt-2">
-                  {history.map(item => (
-                    <li key={item.date} className="mb-4">
-                      <a href="#" onClick={() => onSelectFile(item)}>
-                        Generated Question
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                  <ul className="ml-16 mt-2">
+                    {history.map(item => {
+                      // Format the `updated_at` field
+                      const formattedDate = formatDate(item.updated_at);
+
+                      return (
+                        <li key={item.id} className="mb-4">
+                          <a href="#" onClick={() => onSelectFile(item)} className="text-md">
+                            Generated Question - {formattedDate}
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
             </li>
             <li>
               <a href="#" onClick={showModal} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">

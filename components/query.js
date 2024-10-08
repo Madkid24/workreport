@@ -43,7 +43,6 @@ export const fetchSubjects = async () => {
   
     try {
       const data = await client.request(query);
-    //   console.log(data, "sdata");
       return data.subjects;
     } catch (error) {
       console.error("Error fetching subjects:", error.response?.errors || error);
@@ -64,7 +63,6 @@ export const fetchSubjects = async () => {
     try {
       const variables = { id: questionId }; // Pass the questionId as a variable
       const data = await client.request(query, variables);
-      console.log(data, "subject and grade");
       return data.questions_by_pk; // Return the subject and grade
     } catch (error) {
       console.error("Error fetching subject and grade:", error.response?.errors || error);

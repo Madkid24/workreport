@@ -3,7 +3,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from 'react';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWandSparkles, faBars, faSpinner} from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';
@@ -41,7 +40,7 @@ const LandingPage = () => {
   }); 
   const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date))// New state for typing simulation
   const filteredHistory = history.filter(item => item.content);
-  const limitedHistory = sortedHistory.slice(0, 5);
+  const limitedHistory = sortedHistory.slice(0, 4);
 
   
 
@@ -97,13 +96,7 @@ const LandingPage = () => {
     }
   }, [userId]); 
 
-//   const handlePreview = () => {
-//     const editorQuestions = extractQuestionsFromEditor();
-//     const categorizedQuestions = processQuestionsArray(questionsArray, editorQuestions);
-    
-//     localStorage.setItem('objectiveQuestions', JSON.stringify(categorizedQuestions.objectiveQuestions));
-// };
-
+  
   const handleGenerateClick = () => {
     setIsModalOpen(true);
   };
@@ -127,105 +120,18 @@ const LandingPage = () => {
     localStorage.setItem('isDarkMode', newDarkMode.toString());
 };
 
-// const handleGenerate = useCallback(async (responseData, subject, grade) => {
-//   setIsModalOpen(false); // Close the modal
-//   setIsEditorVisible(true); // Show the SunTextEditor
-//   setContent(''); // Reset content
-//   console.log("resp", responseData)
-
-//   // Ensure responseData is parsed into an object before processing
-//   const parsedResponseData = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
-   
-//   const formattedContent = parsedResponseData
-//     .map(item => {
-//       let answerContent = '';
-
-//       if (item.QuestionType === 'Match the following') {
-//         // Extract left and right labels from the answer array
-//         const leftLabels = item.Answer.map((pair, index) => pair[`${index + 1}_leftlabel`]);
-//         const rightLabels = item.Answer.map((pair, index) => pair[`${index + 1}_rightlabel`]);
-
-//         // Shuffle left labels
-//         const shuffledLeftLabels = [...leftLabels].sort(() => Math.random() - 0.5);
-
-//         // Create answer pairs based on the original right labels using the shuffled left labels
-//         const matchPairs = shuffledLeftLabels.map((shuffledLeft, index) => {
-//           const originalIndex = leftLabels.indexOf(shuffledLeft); // Find the original index of the left label
-//           const correspondingRight = rightLabels[originalIndex]; // Get the corresponding right label
-//           return `${shuffledLeft} ⟷ ${correspondingRight}`; // Create the answer pair
-//         }).join('<br>');
-
-//         // Format the answer content with the question number and question text
-//         answerContent = `
-//           <b>Question ${item.QuestionNumber}:</b> Match the following -
-//           Left labels: [${shuffledLeftLabels.join(', ')}] 
-//           Right labels: [${rightLabels.join(', ')}], <br>
-//           <b>Answer:</b><br>${matchPairs}
-//         `;
-//       } else {
-//         // For other question types, display the answer as it is
-//         answerContent = `
-//           <b>Question ${item.QuestionNumber}:</b> ${item.Question}<br>
-//           <b>Answer:</b> ${item.Answer}
-//         `;
-//       }
-
-//       return `
-//         <div>
-//           <b>Topic:</b> ${item.QuestionTopic}<br>
-//           <b>Blooms Level:</b> ${item.BloomsLevel}<br>
-//           <b>Difficulty Level:</b> ${item.DifficultyLevel}<br>
-//           ${answerContent}  <!-- This includes the question number and question -->
-//         </div>
-//         <br>
-//       `;
-//     })
-//     .join('');
-
-//   try {
-//     // Ensure insertHistory is defined and takes these parameters
-//     await insertHistory(userId, formattedContent, subject, grade, parsedResponseData); // Pass the parsed responseData here
-//   } catch (error) {
-//     console.error("Error inserting history:", error);
-//   }
-
-//   // Start typing effect with formatted content
-//   simulateTyping(formattedContent);
-
-//   // Update the local history state
-//   setHistory(prevHistory => [
-//     ...prevHistory,
-//     {
-//       date: new Date(),
-//       content: formattedContent,
-//       subject,
-//       grade,
-//       responseData: parsedResponseData, // Ensure this is set correctly as grouped data
-//     },
-//   ]);
-// }, [simulateTyping, insertHistory, userId]);
-
 const handleGenerate = useCallback(async (responseData, questionId) => {
   setIsModalOpen(false); // Close the modal
   setIsEditorVisible(true); // Show the SunTextEditor
   setContent(''); // Reset content
-  console.log("resp", responseData);
-  console.log("questionsid", questionId);
 
   // Fetch subject and grade based on the questionId
   const data = await fetchSubjectAndGradeFromQuestionID(questionId)
-  console.log("Fetched Data from fetchSubjectAndGrade:", data);
   const subject_id = data?.subject_id; // Use optional chaining for safety
   const grade_id = data?.grade_id;     // Correctly extracting grade_id
 
-  console.log("subject_id", subject_id);
-  console.log("grade_id", grade_id);
-
   const subject = subject_id ? await fetchSubjectById(subject_id) : null;
   const grade = grade_id ? await fetchGradeById(grade_id) : null;
-
-  console.log("subject", subject);
-  console.log("grade", grade);
 
   // Ensure responseData is parsed into an object before processing
   const parsedResponseData = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
@@ -294,42 +200,22 @@ const handleGenerate = useCallback(async (responseData, questionId) => {
   const historyData = await fetchHistory(userId);
   setHistory(historyData);
 
-  // Update the local history state
-  // setHistory(prevHistory => [
-  //   ...prevHistory,
-  //   {
-  //     date: new Date(),
-  //     content: formattedContent,
-  //     subject,
-  //     grade,
-  //     responseData: parsedResponseData, // Ensure this is set correctly as grouped data
-  //   },
-  // ]);
 }, [simulateTyping, updateQuestionDetails,userId]);
 
 
 const handleSelectFile = async(selectedItem) => {
   if (selectedItem) {
-    console.log('Selected Item:', selectedItem);
 
     const { content, id: questionId, questions } = selectedItem;
-    console.log("respdata", selectedItem.questions)
 
     // Set content, subject, and grade from the selected item
     try {
       const data = await fetchSubjectAndGradeFromQuestionID(questionId)
-  console.log("Fetched Data from fetchSubjectAndGrade:", data);
-  const subject_id = data?.subject_id; // Use optional chaining for safety
-  const grade_id = data?.grade_id;     // Correctly extracting grade_id
+      const subject_id = data?.subject_id; // Use optional chaining for safety
+      const grade_id = data?.grade_id;     // Correctly extracting grade_id
 
-  console.log("subject_id", subject_id);
-  console.log("grade_id", grade_id);
-
-  const subject = subject_id ? await fetchSubjectById(subject_id) : null;
-  const grade = grade_id ? await fetchGradeById(grade_id) : null;
-
-  console.log("subject", subject);
-  console.log("grade", grade);
+      const subject = subject_id ? await fetchSubjectById(subject_id) : null;
+      const grade = grade_id ? await fetchGradeById(grade_id) : null;
 
       // Update the content and PDF details
       setContent(content);
@@ -535,6 +421,14 @@ const handleSelectFile = async(selectedItem) => {
         editorQuestions,
         editorAnswers
       );
+
+      // Filter answers to exclude short answers
+      const filteredAnswers = answers.filter((answer, index) => {
+        // Check if the current index is part of the indices of short answer questions
+        return !shortAnswerQuestions.some((shortAnswer, shortIndex) => {
+          return index === (objectiveQuestions.length + matchQuestions.length + shortIndex);
+        });
+      });
     
       const content = `
       <html>
@@ -649,7 +543,7 @@ const handleSelectFile = async(selectedItem) => {
     
             <h3 class="text-xl font-semibold mb-2">Answers:</h3>
               <div>
-                ${answers.map((answer, index) => `<p>${index + 1}. ${answer}</p>`).join('')}
+              ${filteredAnswers.map((answer, index) => `<p>${index + 1}. ${answer}</p>`).join('')}
               </div>
               <br /> <!-- Add this line for spacing -->
               <div class="w-full text-white text-center" style="background-color: #1a3546; height: 45px;">
