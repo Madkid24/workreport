@@ -3,8 +3,9 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from 'react';
 import jsPDF from 'jspdf';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWandSparkles, faBars, faSpinner} from '@fortawesome/free-solid-svg-icons';
+import { FaWandSparkles, FaSpinner } from 'react-icons/fa6';
+import {FaBars} from 'react-icons/fa';
+import { ImSpinner9 } from "react-icons/im";
 import Image from 'next/image';
 import SunEditor from "suneditor-react";
 import "suneditor/dist/css/suneditor.min.css";
@@ -640,7 +641,7 @@ const handleSelectFile = async(selectedItem) => {
         onClick={toggleSidebar}
         className="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-500 text-white rounded-md shadow-md flex items-center justify-center"
       >
-        <FontAwesomeIcon icon={faBars} className="w-3 h-2" />
+        <FaBars className="w-3 h-2" />
       </button>
 
       {/* Main Content */}
@@ -652,27 +653,31 @@ const handleSelectFile = async(selectedItem) => {
         </div>
 
         {/* Icon Section */}
-        <div className="flex flex-wrap justify-between gap-4 mb-24">
-          <div className="flex flex-col items-center mt-4">
+        <div className="flex flex-wrap justify-between gap-12 mb-24">
+          <div className="flex flex-col items-center mt-4 w-1/4 md:w-auto">
             <img src="icon1.png" alt="Icon 1" className="h-20 w-20" />
-            <p className="mt-2 text-center">Worksheet Generator</p>
+            {/* <p className="mt-2 text-center">Worksheet Generator</p> */}
           </div>
-          <div className="flex flex-col items-center mt-4">
+          <div className="flex flex-col items-center mt-4 w-1/4 md:w-auto">
             <img src="icon2.png" alt="Icon 2" className="h-20 w-20" />
-            <p className="mt-2 text-center">Worksheet Generator</p>
+            {/* <p className="mt-2 text-center">Worksheet Generator</p> */}
           </div>
-          <div className="flex flex-col items-center mt-4">
+          <div className="flex flex-col items-center mt-4 w-1/4 md:w-auto">
             <img src="icon3.png" alt="Icon 3" className="h-20 w-20" />
-            <p className="mt-2 text-center">Worksheet Generator</p>
+            {/* <p className="mt-2 text-center">Worksheet Generator</p> */}
           </div>
-          <div className="flex flex-col items-center mt-4">
+          <div className="flex flex-col items-center mt-4 w-1/4 md:w-auto">
             <img src="icon4.png" alt="Icon 4" className="h-20 w-20" />
-            <p className="mt-2 text-center">Worksheet Generator</p>
+            {/* <p className="mt-2 text-center">Worksheet Generator</p> */}
           </div>
         </div>
 
+        {/* <div className="flex justify-center items-center mt-2">
+  <h1 className="text-center text-6xl font-italic text-blue-900">Worksheet Generator</h1>
+</div> */}
+
         {/* Fixed Text Box with Generate Button */}
-        <div className={`flex flex-col md:flex-row items-center p-3 md:py-2 md:px-2 mt-8`}>
+        <div className={`flex flex-col md:flex-row items-center p-3 md:py-2 md:px-2 mt-12`}>
           <button
             type="button"
             onClick={handleGenerateClick}
@@ -684,7 +689,7 @@ const handleSelectFile = async(selectedItem) => {
             }}
           >
              Generate
-            <FontAwesomeIcon icon={faWandSparkles} className='ml-2' />
+            <FaWandSparkles className='ml-2' />
           </button>
           <style jsx>{`
               @keyframes shine {
@@ -739,7 +744,7 @@ const handleSelectFile = async(selectedItem) => {
             >
               {loading ? (
               <>
-                <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                <ImSpinner9 spin className="mr-2" />
               </>
             ) : (
               <>

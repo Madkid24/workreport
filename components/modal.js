@@ -1,5 +1,5 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWandSparkles, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { FaWandSparkles, FaSpinner } from 'react-icons/fa6';
+import { ImSpinner9 } from "react-icons/im";
 import React, { useState, useEffect } from 'react';
 import AlertBox from './alertBox';
 import { fetchGrades, fetchSubjects, fetchTopics } from './query';
@@ -435,13 +435,13 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
           >
             {loading ? (
               <>
-                <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                <ImSpinner9 className="mr-2 animate-spin" />
                 Generating...
               </>
             ) : (
               <>
                 Generate
-                <FontAwesomeIcon icon={faWandSparkles} className="ml-2" />
+                <FaWandSparkles className="ml-2" />
               </>
             )}
           </button>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import Image from 'next/image';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock, faInfoCircle, faToggleOn, faToggleOff, faSignOutAlt, faBars } from '@fortawesome/free-solid-svg-icons';
+import { FaClock, FaInfoCircle, FaToggleOn, FaToggleOff, FaSignOutAlt, FaBars } from 'react-icons/fa';
 
 const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, history, sortedHistory, onSelectFile }) => {
   const [isHistoryListVisible, setIsHistoryListVisible] = useState(false);
@@ -51,7 +50,7 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
           <ul className="space-y-6">
             <li>
               <a href="#" onClick={handleExploreHistoryClick} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
-                <FontAwesomeIcon icon={faClock} className="w-6 h-6" />
+              <FaClock className="w-6 h-6" />
                 <span className="ml-2">Explore History</span>
               </a>
               {isHistoryListVisible && (
@@ -73,19 +72,19 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
             </li>
             <li>
               <a href="#" onClick={showModal} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
-                <FontAwesomeIcon icon={faInfoCircle} className="w-6 h-6" />
+              <FaInfoCircle className="w-6 h-6" />
                 <span className="ml-2">Instructions</span>
               </a>
             </li>
             <li>
               <a href="#" onClick={toggleDarkMode} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
-                <FontAwesomeIcon icon={isDarkMode ? faToggleOn : faToggleOff} className="w-6 h-6" />
+              {isDarkMode ? <FaToggleOn className="w-6 h-6" /> : <FaToggleOff className="w-6 h-6" />}
                 <span className="ml-2">Dark Mode</span>
               </a>
             </li>
             <li>
               <a href="#" className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
-                <FontAwesomeIcon icon={faSignOutAlt} className="w-6 h-6" />
+              <FaSignOutAlt className="w-6 h-6" />
                 <span className="ml-2">Log Out</span>
               </a>
             </li>
@@ -102,7 +101,7 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
           <ul className="space-y-6">
             <li>
               <a href="#" onClick={handleExploreHistoryClick} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
-                <FontAwesomeIcon icon={faClock} className="w-6 h-6" />
+              <FaClock className="w-6 h-6" />
                 <span className="ml-2">Explore History</span>
               </a>
               {isHistoryListVisible && (
@@ -119,19 +118,19 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
             </li>
             <li>
               <a href="#" onClick={showModal} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
-                <FontAwesomeIcon icon={faInfoCircle} className="w-6 h-6" />
+              <FaInfoCircle className="w-6 h-6" />
                 <span className="ml-2">Instructions</span>
               </a>
             </li>
             <li>
               <a href="#" onClick={toggleDarkMode} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
-                <FontAwesomeIcon icon={isDarkMode ? faToggleOn : faToggleOff} className="w-6 h-6" />
+              {isDarkMode ? <FaToggleOn className="w-6 h-6" /> : <FaToggleOff className="w-6 h-6" />}
                 <span className="ml-2">Dark Mode</span>
               </a>
             </li>
             <li>
               <a href="#" className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
-                <FontAwesomeIcon icon={faSignOutAlt} className="w-6 h-6" />
+              <FaSignOutAlt className="w-6 h-6" />
                 <span className="ml-2">Log Out</span>
               </a>
             </li>
@@ -141,7 +140,7 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
 
 
       <button onClick={toggleSidebar} className="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-500 text-white rounded-md shadow-md flex items-center justify-center">
-        <FontAwesomeIcon icon={faBars} className="w-3 h-2" />
+        <FaBars className="w-3 h-2" />
       </button>
 
       {/* Modal for Instructions */}
