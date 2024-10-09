@@ -7,10 +7,10 @@ import { ImSpinner9 } from "react-icons/im";
 import Image from 'next/image';
 import SunEditor from "suneditor-react";
 import "suneditor/dist/css/suneditor.min.css";
-import Sidebar from '../../components/sidebar';
-import Modal from '../../components/modal';
+import Sidebar from '../../components/generateWorksheet/Sidebar';
+import Modal from '../../components/generateWorksheet/Modal';
 import html2canvas from 'html2canvas';
-import { fetchHistory, insertHistory, fetchUsers, updateQuestionDetails, fetchSubjectAndGradeFromQuestionID,fetchSubjectById, fetchGradeById } from '../../components/query';
+import { fetchHistory, insertHistory, fetchUsers, updateQuestionDetails, fetchSubjectAndGradeFromQuestionID,fetchSubjectById, fetchGradeById } from '../../components/generateWorksheet/Query';
 
 
 const LandingPage = () => {
@@ -457,7 +457,7 @@ const handleSelectFile = async(selectedItem) => {
           <!-- Questions Box -->
           <div class="print-container" id="questions-container">
             <div class="relative text-center mb-5">
-              <img src="/worksheettemplateheader.png" alt="Worksheet Header" class="w-full h-auto" />
+              <img src="/assets/generateWorksheet/worksheettemplateheader.png" alt="Worksheet Header" class="w-full h-auto" />
               <div class="absolute top-1/4 left-1/2 transform -translate-x-1/4 -translate-y-1/3 text-white" style="font-size: 42px; font-weight: bold;">
                   W O R K S H E E T
               </div>
@@ -530,7 +530,7 @@ const handleSelectFile = async(selectedItem) => {
           <!-- Answers Box -->
           <div class="print-container" id="answers-container">
             <div class="relative text-center mb-5">
-              <img src="/worksheettemplateheader.png" alt="Worksheet Header" class="w-full h-auto"/>
+              <img src="/assets/generateWorksheet/worksheettemplateheader.png" alt="Worksheet Header" class="w-full h-auto"/>
               <div class="absolute top-1/4 left-1/2 transform -translate-x-1/4 -translate-y-1/3 text-white" style="font-size: 45px; font-weight: bold;">
                 A N S W E R S
               </div>

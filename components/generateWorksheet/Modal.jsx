@@ -1,8 +1,8 @@
 import { FaWandSparkles } from 'react-icons/fa6';
 import { ImSpinner9 } from "react-icons/im";
 import React, { useState, useEffect } from 'react';
-import AlertBox from './alertBox';
-import { fetchGrades, fetchSubjects, fetchTopics } from './query';
+import AlertBox from './AlertBox';
+import { fetchGrades, fetchSubjects, fetchTopics } from './Query';
 
 
 

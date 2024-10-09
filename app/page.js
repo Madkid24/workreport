@@ -813,6 +813,7 @@ import { redirect } from 'next/navigation';
 
 export default function Home() {
   // Redirect the user to /generateworksheet when they visit /
-  redirect('/generateworksheet');
+  console.log("Redirecting to GenerateWorksheet");
+  redirect('/GenerateWorksheet');
   return null;
 }
