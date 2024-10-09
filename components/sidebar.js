@@ -44,7 +44,7 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
       {/* Sidebar for desktop */}
       <div className={`hidden md:flex md:w-64 h-screen ${isDarkMode ? 'bg-gray-800' : 'bg-[#ecf0f3]'} text-gray-500 flex flex-col shadow-lg`}>
         <div className="p-4 flex items-center justify-center">
-          <Image src={isDarkMode ? "/cenlogo.jpg" : "/logo.png"} alt="Logo" className="h-22 w-60" width={240} height={88} loading='lazy' />
+          <Image src={isDarkMode ? "/cenlogo.jpg" : "/logo.png"} alt="Logo" className="h-22 w-60" width={240} height={88}  priority />
         </div>
         <nav className="flex-1 mt-6">
           <ul className="space-y-6">
@@ -106,13 +106,16 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
               </a>
               {isHistoryListVisible && (
                 <ul className="ml-10 mt-2">
-                  {history.map(item => (
-                    <li key={item.date} className="mb-4">
+                  {history.map(item => {
+                    const formattedDate = formatDate(item.updated_at);
+                    return (
+                    <li key={item.id} className="mb-4">
                       <a href="#" onClick={() => { onSelectFile(item); toggleSidebar();}} >
-                        Generated Question
+                        Generated Question - {formattedDate}
                       </a>
                     </li>
-                  ))}
+                    )
+                  })}
                 </ul>
               )}
             </li>
@@ -137,7 +140,6 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
           </ul>
         </div>
       )}
-
 
       <button onClick={toggleSidebar} className="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-500 text-white rounded-md shadow-md flex items-center justify-center">
         <FaBars className="w-3 h-2" />

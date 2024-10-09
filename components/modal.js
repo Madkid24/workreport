@@ -1,4 +1,4 @@
-import { FaWandSparkles, FaSpinner } from 'react-icons/fa6';
+import { FaWandSparkles } from 'react-icons/fa6';
 import { ImSpinner9 } from "react-icons/im";
 import React, { useState, useEffect } from 'react';
 import AlertBox from './alertBox';
@@ -263,6 +263,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       }
 
       const responseData = await response.json();
+      console.log(responseData,"resp");
 
       const questionsArray = responseData?.content?.airesponse || responseData?.content?.response || [];
 
