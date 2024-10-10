@@ -6,7 +6,7 @@ import { fetchGrades, fetchSubjects, fetchTopics } from './Query';
 
 
 
-const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateChange, onPrepareDownload, onUpdateSubjectAndGrade }) => {
+const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateChange, onPrepareDownload, onUpdateSubjectAndGrade, userId }) => {
   const [subject, setSubject] = useState('');
   const [subjects, setSubjects] = useState([]);
   const [subjectsFetched, setSubjectsFetched] = useState(false);
@@ -247,7 +247,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     try {
       const aiAuthToken = process.env.NEXT_PUBLIC_AI_AUTH_TOKEN;
       console.log(process.env.NEXT_PUBLIC_BASE_URL, 'base url')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/worksheet/generate/971944d1-31ea-4442-aea5-d71533ac3953`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/worksheet/generate/${userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

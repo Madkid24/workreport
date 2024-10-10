@@ -44,9 +44,9 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
       {/* Sidebar for desktop */}
       <div className={`hidden md:flex md:w-64 h-screen ${isDarkMode ? 'bg-gray-800' : 'bg-[#ecf0f3]'} text-gray-500 flex flex-col shadow-lg`}>
         <div className="p-4 flex items-center justify-center">
-          {/* <Image src={isDarkMode ? "/cenlogo.jpg" : "/logo.png"} alt="Logo" className="h-22 w-60" width={240} height={88}  priority /> */}
+          <img src={isDarkMode ? "/assets/generateWorksheet/cenlogo.jpg" : "/assets/generateWorksheet/logo.png"} alt="Logo" className="h-22 w-60"/>
         </div>
-        <nav className="flex-1 mt-24">
+        <nav className="flex-1 mt-6">
           <ul className="space-y-6">
             <li>
               <a href="#" onClick={handleExploreHistoryClick} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
@@ -62,7 +62,7 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
                       return (
                         <li key={item.id} className="mb-4">
                           <a href="#" onClick={() => onSelectFile(item)} className="text-md">
-                            Generated Question - {formattedDate}
+                            Generated Question - <br /> {formattedDate}
                           </a>
                         </li>
                       );
@@ -96,7 +96,7 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
        {isSidebarOpen && (
         <div className={`fixed inset-0 ${isDarkMode ? 'bg-gray-800' : 'bg-[#ecf0f3]'} text-gray-500 flex flex-col shadow-lg z-40 md:hidden`}>
           <div className="p-4 flex items-center justify-between">
-            {/* <Image src={isDarkMode ? "/cenlogo.jpg" : "/logo.png"} alt="Logo" className="h-22 w-60" width={240} height={88} /> */}
+            <img src={isDarkMode ? "/assets/generateWorksheet/cenlogo.jpg" : "/assets/generateWorksheet/logo.png"} alt="Logo" className="h-22 w-60" />
           </div>
           <ul className="space-y-6">
             <li>

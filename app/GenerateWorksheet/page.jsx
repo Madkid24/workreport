@@ -26,8 +26,8 @@ const LandingPage = () => {
   const contentRef = useRef(null);
   const [isEditorDisabled, setIsEditorDisabled] = useState(true);
   const [history, setHistory] = useState([]);
-  // const [userId, setUserId] = useState(null);
-  const userId = "971944d1-31ea-4442-aea5-d71533ac3953"
+  const [userId, setUserId] = useState(null);
+  // const userId = "971944d1-31ea-4442-aea5-d71533ac3953"
   const [selectedFileIndex, setSelectedFileIndex] = useState(null); 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -66,17 +66,18 @@ const LandingPage = () => {
     }
   }, [content]);
 
-  // useEffect(() => {
-  //   const getUsers = async () => {
-  //     try {
-  //       const userData = await fetchUsers();
-  //       setUserId(userData[0].id);
-  //     } catch(error) {
-  //       console.error("Error fetching user id:", error);
-  //     }
-  //   };
-  //   getUsers();
-  // });
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        const userData = await fetchUsers();
+        setUserId(userData[0].id);
+        console.log(userId);
+      } catch(error) {
+        console.error("Error fetching user id:", error);
+      }
+    };
+    getUsers();
+  });
 
   useEffect(() => {
     // Only fetch history if userId is set and valid
@@ -646,22 +647,22 @@ const handleSelectFile = async(selectedItem) => {
       <div className={`flex-1 p-4 md:p-6 flex flex-col ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
         {/* Logo Section */}
         <div className="flex justify-center mb-8">
-        <Image src="/centalogo1.png" alt="Logo" className="h-22 w-60" width={240} height={88} priority />
+        <img src="/assets/generateWorksheet/centalogo1.png" alt="Logo" className="h-22 w-60" />
         </div>
 
         {/* Icon Section */}
         <div className="flex flex-wrap justify-between gap-12 mb-24">
           <div className="flex flex-col items-center mt-4 w-1/4 md:w-auto">
-            <Image src="/icon1.png" alt="Icon 1" className="h-20 w-20" width={240} height={88} priority />
+            <img src="/assets/generateWorksheet/icon1.png" alt="Icon 1" className="h-20 w-20" />
           </div>
           <div className="flex flex-col items-center mt-4 w-1/4 md:w-auto">
-            <Image src="/icon2.png" alt="Icon 2" className="h-20 w-20" width={240} height={88} priority />
+            <img src="/assets/generateWorksheet/icon2.png" alt="Icon 2" className="h-20 w-20" />
           </div>
           <div className="flex flex-col items-center mt-4 w-1/4 md:w-auto">
-            <Image src="/icon3.png" alt="Icon 3" className="h-20 w-20" width={240} height={88} priority />
+            <img src="/assets/generateWorksheet/icon3.png" alt="Icon 3" className="h-20 w-20" />
           </div>
           <div className="flex flex-col items-center mt-4 w-1/4 md:w-auto">
-            <Image src="/icon4.png" alt="Icon 4" className="h-20 w-20" width={240} height={88} priority />
+            <img src="/assets/generateWorksheet/icon4.png" alt="Icon 4" className="h-20 w-20" />
           </div>
         </div>
 
@@ -793,6 +794,7 @@ const handleSelectFile = async(selectedItem) => {
         template={template}
         handleTemplateChange={handleTemplateChange}
         onPrepareDownload={handlePrepareDownload} 
+        userId={userId}
       />
     </div>
   );
