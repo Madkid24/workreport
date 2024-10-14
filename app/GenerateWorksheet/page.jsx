@@ -38,7 +38,7 @@ const LandingPage = () => {
   }); 
   const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date))// New state for typing simulation
   const filteredHistory = history.filter(item => item.content);
-  const limitedHistory = sortedHistory.slice(0, 4);
+  const limitedHistory = sortedHistory.slice(0, 5);
 
   
 

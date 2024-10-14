@@ -38,59 +38,66 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
   };
   
 
-
   return (
     <>
-      {/* Sidebar for desktop */}
-      <div className={`hidden md:flex md:w-64 h-screen ${isDarkMode ? 'bg-gray-800' : 'bg-[#ecf0f3]'} text-gray-500 flex flex-col shadow-lg`}>
-        <div className="p-4 flex items-center justify-center">
-          <img src={isDarkMode ? "/assets/generateWorksheet/cenlogo.jpg" : "/assets/generateWorksheet/logo.png"} alt="Logo" className="h-22 w-60"/>
-        </div>
-        <nav className="flex-1 mt-6">
-          <ul className="space-y-6">
-            <li>
-              <a href="#" onClick={handleExploreHistoryClick} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
+  {/* Sidebar for desktop */}
+  <div className={`hidden md:flex md:w-64 h-screen ${isDarkMode ? 'bg-gray-800' : 'bg-[#ecf0f3]'} text-gray-500 flex flex-col shadow-lg`}>
+    <div className="p-4 flex items-center justify-center">
+      <img src={isDarkMode ? "/assets/generateWorksheet/cenlogo.jpg" : "/assets/generateWorksheet/logo.png"} alt="Logo" className="h-22 w-60"/>
+    </div>
+    <nav className="flex-1 flex flex-col">
+      <div className="flex-1 mt-6" style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'scroll', scrollbarWidth: 'none' }}>
+        <ul className="space-y-6">
+          <li>
+            <a href="#" onClick={handleExploreHistoryClick} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
               <FaClock className="w-6 h-6" />
-                <span className="ml-2">Explore History</span>
-              </a>
-              {isHistoryListVisible && (
-                  <ul className="ml-16 mt-2">
-                    {history.map(item => {
-                      // Format the `updated_at` field
-                      const formattedDate = formatDate(item.updated_at);
+              <span className="ml-2">Explore History</span>
+            </a>
+            {isHistoryListVisible && (
+              <ul className="ml-16 mt-2">
+                {history.map(item => {
+                  // Format the `updated_at` field
+                  const formattedDate = formatDate(item.updated_at);
 
-                      return (
-                        <li key={item.id} className="mb-4">
-                          <a href="#" onClick={() => onSelectFile(item)} className="text-md">
-                            Generated Question - <br /> {formattedDate}
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-            </li>
-            <li>
-              <a href="#" onClick={showModal} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
+                  return (
+                    <li key={item.id} className="mb-4">
+                      <a href="#" onClick={() => onSelectFile(item)} className="text-md">
+                        Generated Question - <br /> {formattedDate}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </li>
+          <li>
+            <a href="#" onClick={showModal} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
               <FaInfoCircle className="w-6 h-6" />
-                <span className="ml-2">Instructions</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={toggleDarkMode} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
+              <span className="ml-2">Instructions</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" onClick={toggleDarkMode} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
               {isDarkMode ? <FaToggleOn className="w-6 h-6" /> : <FaToggleOff className="w-6 h-6" />}
-                <span className="ml-2">Dark Mode</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
+              <span className="ml-2">Dark Mode</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
               <FaSignOutAlt className="w-6 h-6" />
-                <span className="ml-2">Log Out</span>
-              </a>
-            </li>
-          </ul>
-        </nav>
+              <span className="ml-2">Log Out</span>
+            </a>
+          </li>
+        </ul>
       </div>
+      <style jsx>{`
+        div::-webkit-scrollbar {
+          display: none; /* For Chrome, Safari, and Opera */
+        }
+      `}</style>
+    </nav>
+  </div>
+
 
       {/* Mobile Sidebar */}
        {isSidebarOpen && (
