@@ -100,54 +100,72 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
   </div>
 
 
-      {/* Mobile Sidebar */}
-       {isSidebarOpen && (
-        <div className={`fixed inset-0 ${isDarkMode ? 'bg-gray-800' : 'bg-[#ecf0f3]'} text-gray-500 flex flex-col shadow-lg z-40 md:hidden`}>
-          <div className="p-8 flex items-center justify-between">
-            <img src={isDarkMode ? "/assets/generateWorksheet/cenlogo.jpg" : "/assets/generateWorksheet/logo.png"} alt="Logo" className="h-22 w-60" />
-          </div>
-          <ul className="space-y-6">
-            <li>
-              <a href="#" onClick={handleExploreHistoryClick} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
-              <FaClock className="w-6 h-6" />
-                <span className="ml-2">Explore History</span>
-              </a>
-              {isHistoryListVisible && (
-                <ul className="ml-10 mt-2">
-                  {history.map(item => {
-                    const formattedDate = formatDate(item.updated_at);
-                    return (
-                    <li key={item.id} className="mb-4">
-                      <a href="#" onClick={() => { onSelectFile(item); toggleSidebar();}} >
-                        Generated Question - {formattedDate}
-                      </a>
-                    </li>
-                    )
-                  })}
-                </ul>
-              )}
-            </li>
-            <li>
-              <a href="#" onClick={showModal} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
-              <FaInfoCircle className="w-6 h-6" />
-                <span className="ml-2">Instructions</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={toggleDarkMode} className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
-              {isDarkMode ? <FaToggleOn className="w-6 h-6" /> : <FaToggleOff className="w-6 h-6" />}
-                <span className="ml-2">Dark Mode</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" className="flex items-center px-4 py-2 ml-8 hover:bg-gray-200 text-xl font-sans">
-              <FaSignOutAlt className="w-6 h-6" />
-                <span className="ml-2">Log Out</span>
-              </a>
-            </li>
+     {/* Mobile Sidebar */}
+{isSidebarOpen && (
+  <div
+    className={`fixed inset-0 ${isDarkMode ? 'bg-gray-800' : 'bg-[#ecf0f3]'} text-gray-500 flex flex-col shadow-lg z-40 md:hidden w-5/5`}
+  >
+    <div className="p-2 flex items-center justify-between">
+      <img
+        src={isDarkMode ? "/assets/generateWorksheet/cenlogo.jpg" : "/assets/generateWorksheet/logo.png"}
+        alt="Logo"
+        className="h-16 w-30 pl-2"
+      />
+    </div>
+    <ul className="space-y-6">
+      <li>
+        <a
+          href="#"
+          onClick={handleExploreHistoryClick}
+          className="flex items-center px-4 ml-2 mt-6  hover:bg-gray-200 text-xl font-sans"
+        >
+          <FaClock className="w-6 h-6" />
+          <span className="ml-2">Explore History</span>
+        </a>
+        {isHistoryListVisible && (
+          <ul className="ml-10 mt-2">
+            {history.map(item => {
+              const formattedDate = formatDate(item.updated_at);
+              return (
+                <li key={item.id} className="mb-4">
+                  <a href="#" onClick={() => { onSelectFile(item); toggleSidebar(); }}>
+                    Generated Question - {formattedDate}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
-        </div>
-      )}
+        )}
+      </li>
+      <li>
+        <a
+          href="#"
+          onClick={showModal}
+          className="flex items-center px-4 py-2 ml-2 hover:bg-gray-200 text-xl font-sans"
+        >
+          <FaInfoCircle className="w-6 h-6" />
+          <span className="ml-2">Instructions</span>
+        </a>
+      </li>
+      <li>
+        <a
+          href="#"
+          onClick={toggleDarkMode}
+          className="flex items-center px-4 py-2 ml-2 hover:bg-gray-200 text-xl font-sans"
+        >
+          {isDarkMode ? <FaToggleOn className="w-6 h-6" /> : <FaToggleOff className="w-6 h-6" />}
+          <span className="ml-2">Dark Mode</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" className="flex items-center px-4 py-2 ml-2 hover:bg-gray-200 text-xl font-sans">
+          <FaSignOutAlt className="w-6 h-6" />
+          <span className="ml-2">Log Out</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+)}
 
       {/* Modal for Instructions */}
       {isModalVisible && (
