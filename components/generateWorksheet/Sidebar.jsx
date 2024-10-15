@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { FaClock, FaInfoCircle, FaToggleOn, FaToggleOff, FaSignOutAlt, FaBars } from 'react-icons/fa';
+import { AiOutlineClose } from "react-icons/ai";
 
 const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, history, sortedHistory, onSelectFile }) => {
   const [isHistoryListVisible, setIsHistoryListVisible] = useState(false);
@@ -102,7 +103,7 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
       {/* Mobile Sidebar */}
        {isSidebarOpen && (
         <div className={`fixed inset-0 ${isDarkMode ? 'bg-gray-800' : 'bg-[#ecf0f3]'} text-gray-500 flex flex-col shadow-lg z-40 md:hidden`}>
-          <div className="p-4 flex items-center justify-between">
+          <div className="p-8 flex items-center justify-between">
             <img src={isDarkMode ? "/assets/generateWorksheet/cenlogo.jpg" : "/assets/generateWorksheet/logo.png"} alt="Logo" className="h-22 w-60" />
           </div>
           <ul className="space-y-6">
@@ -147,10 +148,6 @@ const Sidebar = ({ isDarkMode, toggleDarkMode, toggleSidebar, isSidebarOpen, his
           </ul>
         </div>
       )}
-
-      <button onClick={toggleSidebar} className="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-500 text-white rounded-md shadow-md flex items-center justify-center">
-        <FaBars className="w-3 h-2" />
-      </button>
 
       {/* Modal for Instructions */}
       {isModalVisible && (

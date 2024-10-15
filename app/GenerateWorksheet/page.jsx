@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import jsPDF from 'jspdf';
 import { FaWandSparkles} from 'react-icons/fa6';
 import {FaBars} from 'react-icons/fa';
+import { AiOutlineClose } from 'react-icons/ai';
 import { ImSpinner9 } from "react-icons/im";
 import Image from 'next/image';
 import SunEditor from "suneditor-react";
@@ -637,14 +638,18 @@ const handleSelectFile = async(selectedItem) => {
 
       <button
         onClick={toggleSidebar}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-500 text-white rounded-md shadow-md flex items-center justify-center"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 py-2 bg-white text-black rounded-md shadow-md flex items-center justify-center"
       >
-        <FaBars className="w-3 h-2" />
+        {isSidebarOpen ? (
+          <AiOutlineClose className="w-4 h-4 text-black" /> // Close icon
+        ) : (
+          <FaBars className="w-3 h-4 text-black" /> // Bars icon
+        )}
       </button>
 
       {/* Main Content */}
       {!isEditorVisible &&  (
-      <div className={`flex-1 p-4 md:p-6 flex flex-col ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
+      <div className={`flex-1 p-8 md:p-6 flex flex-col ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
         {/* Logo Section */}
         <div className="flex justify-center mb-8">
         <img src="/assets/generateWorksheet/centalogo1.png" alt="Logo" className="h-22 w-60" />
