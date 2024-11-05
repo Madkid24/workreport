@@ -584,8 +584,8 @@ const handleSelectFile = async(selectedItem) => {
       `;
     
       const printWindow = window.open('', '_blank');
-  printWindow.document.write(content);
-  printWindow.document.close();
+      printWindow.document.write(content);
+      printWindow.document.close();
 
   printWindow.onload = () => {
     const downloadBtn = printWindow.document.createElement('button');
@@ -615,6 +615,10 @@ const handleSelectFile = async(selectedItem) => {
     printWindow.document.body.appendChild(cancelBtn);
 
     downloadBtn.onclick = async () => {
+      downloadBtn.disabled = true;
+      downloadBtn.innerText = 'Downloading';
+      downloadBtn.style.cursor = 'not-allowed';
+      
       const width = 210; // A3 width in mm
       const height = 370; // A3 height in mm
       const pdf = new jsPDF({format: [width, height]});
