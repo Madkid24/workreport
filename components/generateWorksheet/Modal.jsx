@@ -292,14 +292,14 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
         {alertMessage && (
           <AlertBox message={alertMessage} onClose={() => setAlertMessage('')} />
         )}
-        <h2 className="text-xl font-semibold mb-4">Generate Worksheet</h2>
+        <h2 className="text-xl font-semibold mb-4 text-black">Generate Worksheet</h2>
         <div className="mb-4">
           <label htmlFor="subject" className="block text-gray-700 mb-2">
             Subject <span className="text-red-500">*</span>
           </label>
           <select
             id="subject"
-            className="block w-full p-2 border border-gray-300 rounded-md"
+            className="block w-full p-2 border border-gray-300 rounded-md text-black"
             value={subject}
             onChange={handleSubjectChange}
             required
@@ -312,7 +312,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       </div>
         <div className="mb-4">
           <label htmlFor="grade" className="block text-gray-700 mb-2">Grade <span className="text-red-500">*</span></label>
-          <select id="grade" className="block w-full p-2 border border-gray-300 rounded-md" value={grade} onChange={handleGradeChange}>
+          <select id="grade" className="block w-full p-2 border border-gray-300 rounded-md text-black" value={grade} onChange={handleGradeChange}>
           <option value="" disabled>Select Grade</option>
             {grades.map((grd) => (
               <option key={grd.id} value={grd.id}>{grd.grade_name}</option> // Ensure this returns the option
@@ -321,7 +321,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
         </div>
         <div className='mb-4'>
           <label htmlFor="topic" className='block text-gray-700 mb-2'>Topic <span className='text-red-500'>*</span></label>
-          <select id="topic" className='block w-full p-2 border border-gray-300 rounded md' value={topic} onChange={handleTopicChange}>
+          <select id="topic" className='block w-full p-2 border border-gray-300 rounded md text-black' value={topic} onChange={handleTopicChange}>
           {topics === null ? (
             <option value="" disabled>No topic is mapped with the subject</option>
           ) : (
@@ -338,7 +338,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
           <label htmlFor="template" className="block text-gray-700 mb-2">Template <span className="text-red-500">*</span></label>
           <select
             id="template"
-            className="block w-full p-2 border border-gray-300 rounded-md"
+            className="block w-full p-2 border border-gray-300 rounded-md text-black"
             value={template}
             onChange={handleTemplateChange}
           >
@@ -359,7 +359,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
                     type="text"
                     value={questionDetails[index].questionNumber}
                     readOnly
-                    className="block w-full p-2 border border-gray-300 rounded-md"
+                    className="block w-full p-2 border border-gray-300 rounded-md text-black"
                   />
                 </div>
                 <div className="flex-1">
@@ -368,7 +368,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
                   </label>
                   <select
                     id={`type-${index}`}
-                    className="block w-full p-2 border border-gray-300 rounded-md"
+                    className="block w-full p-2 border border-gray-300 rounded-md text-black"
                     value={questionDetails[index].questionType}
                     onChange={(e) => handleDetailChange(index, 'questionType', e.target.value)}
                   >
@@ -385,7 +385,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
                   </label>
                   <select
                     id={`difficulty-${index}`}
-                    className="block w-full p-2 border border-gray-300 rounded-md"
+                    className="block w-full p-2 border border-gray-300 rounded-md text-black"
                     value={questionDetails[index].difficulty}
                     onChange={(e) => handleDetailChange(index, 'difficulty', e.target.value)}
                   >
@@ -401,7 +401,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
                   </label>
                   <select
                     id={`blooms-level-${index}`}
-                    className="block w-full p-2 border border-gray-300 rounded-md"
+                    className="block w-full p-2 border border-gray-300 rounded-md text-black"
                     value={questionDetails[index].blooms}
                     onChange={(e) => handleDetailChange(index, 'blooms', e.target.value)}
                   >

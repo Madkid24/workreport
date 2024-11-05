@@ -30,8 +30,7 @@ export const fetchUsers = async () => {
   }
 };
 
-export const fetchSubjects = async () => {
-    
+export const fetchSubjects = async () => {    
     const query = gql`
       query GetSubjects {
         subjects {

@@ -10,10 +10,11 @@ import { ImSpinner9 } from "react-icons/im";
 import Image from 'next/image';
 import SunEditor from "suneditor-react";
 import "suneditor/dist/css/suneditor.min.css";
-import Sidebar from '../../components/generateWorksheet/Sidebar';
-import Modal from '../../components/generateWorksheet/Modal';
+// import Sidebar from '../../../components/generateWorksheet/Sidebar';
+import Modal from '../../../components/generateWorksheet/Modal';
 import html2canvas from 'html2canvas';
-import { fetchHistory, insertHistory, fetchUsers, updateQuestionDetails, fetchSubjectAndGradeFromQuestionID,fetchSubjectById, fetchGradeById } from '../../components/generateWorksheet/Query';
+import { fetchHistory, insertHistory, fetchUsers, updateQuestionDetails, fetchSubjectAndGradeFromQuestionID,fetchSubjectById, fetchGradeById } from '../../../components/generateWorksheet/Query';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 
 const LandingPage = () => {
@@ -30,20 +31,26 @@ const LandingPage = () => {
   const [isEditorDisabled, setIsEditorDisabled] = useState(true);
   const [history, setHistory] = useState([]);
   const [userId, setUserId] = useState(null);
+  const [isHistoryListVisible, setIsHistoryListVisible] = useState(false);
+  const [isInstructModalVisible, setIsInstructModalVisible] = useState(false); // State for modal visibility
   // const userId = "971944d1-31ea-4442-aea5-d71533ac3953"
   const [selectedFileIndex, setSelectedFileIndex] = useState(null); 
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const savedDarkMode = localStorage.getItem('isDarkMode');
-      return savedDarkMode ? savedDarkMode === 'true' : false;
-    }
-    return false; // Default value if localStorage is not available
-  }); 
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date))// New state for typing simulation
   const filteredHistory = history.filter(item => item.content);
   const limitedHistory = sortedHistory.slice(0, 5);
 
+  const pathname = usePathname(); // Get the current pathname
   
+  // Extract userId from the pathname
+  const extractedUserId = pathname.split('/').pop(); // Get the last segment of the URL
+  
+  useEffect(() => {
+    if (extractedUserId) {
+      setUserId(extractedUserId); // Set the userId state
+      console.log(`User ID: ${extractedUserId}`);
+    }
+  }, [extractedUserId]);
 
   const simulateTyping = useCallback((text, interval = 30) => {
     let index = 0;
@@ -69,18 +76,6 @@ const LandingPage = () => {
     }
   }, [content]);
 
-  useEffect(() => {
-    const getUsers = async () => {
-      try {
-        const userData = await fetchUsers();
-        setUserId(userData[0].id);
-        console.log(userId);
-      } catch(error) {
-        console.error("Error fetching user id:", error);
-      }
-    };
-    getUsers();
-  });
 
   useEffect(() => {
     // Only fetch history if userId is set and valid
@@ -97,6 +92,32 @@ const LandingPage = () => {
       getHistory();
     }
   }, [userId]); 
+
+  const handleExploreHistoryClick = () => {
+    setIsHistoryListVisible(prev => !prev);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+  };
+
+  const showInstructModal = () => {
+    setIsInstructModalVisible(true);
+  };
+
+  const closeInstructModal = () => {
+    setIsInstructModalVisible(false);
+  };
 
   
   const handleGenerateClick = () => {
@@ -150,6 +171,12 @@ const handleGenerate = useCallback(async (responseData, questionId) => {
         // Shuffle left labels
         const shuffledLeftLabels = [...leftLabels].sort(() => Math.random() - 0.5);
 
+        // Wrap each shuffled left label in double quotes and join with a comma
+        const quotedShuffledLeftLabels = shuffledLeftLabels.map(label => `"${label}"`).join(', ');
+
+        // Wrap each right label in double quotes and join with a comma
+        const quotedRightLabels = rightLabels.map(label => `"${label}"`).join(', ');
+
         // Create answer pairs based on the original right labels using the shuffled left labels
         const matchPairs = shuffledLeftLabels.map((shuffledLeft, index) => {
           const originalIndex = leftLabels.indexOf(shuffledLeft); // Find the original index of the left label
@@ -160,8 +187,8 @@ const handleGenerate = useCallback(async (responseData, questionId) => {
         // Format the answer content with the question number and question text
         answerContent = `
           <b>Question ${item.QuestionNumber}:</b> Match the following -
-          Left labels: [${shuffledLeftLabels.join(', ')}] 
-          Right labels: [${rightLabels.join(', ')}] <br>
+          Left labels: [${quotedShuffledLeftLabels}] 
+          Right labels: [${quotedRightLabels}] <br>
           <b>Answer:</b><br>${matchPairs}
         `;
       } else {
@@ -500,8 +527,8 @@ const handleSelectFile = async(selectedItem) => {
                     </thead>
                     <tbody>
                       ${leftLabelsMatch && rightLabelsMatch ? (() => {
-                        const leftLabels = leftLabelsMatch[1].split(',').map(label => label.trim());
-                        const rightLabels = rightLabelsMatch[1].split(',').map(label => label.trim());
+                        const leftLabels = leftLabelsMatch[1].match(/"(.*?)"(?=\s*,|\s*$)/g).map(label => label.replace(/"/g, '').trim());
+                        const rightLabels = rightLabelsMatch[1].match(/"(.*?)"(?=\s*,|\s*$)/g).map(label => label.replace(/"/g, '').trim());
     
                         return leftLabels.map((leftLabel, index) => `
                           <tr>
@@ -589,7 +616,7 @@ const handleSelectFile = async(selectedItem) => {
 
     downloadBtn.onclick = async () => {
       const width = 210; // A3 width in mm
-      const height = 420; // A3 height in mm
+      const height = 370; // A3 height in mm
       const pdf = new jsPDF({format: [width, height]});
 
       // Capture questions box as image
@@ -627,8 +654,8 @@ const handleSelectFile = async(selectedItem) => {
 };
 
   return (
-    <div className={`flex ${isDarkMode ? 'bg-gray-900' : 'bg-white'} text-gray-900`}>
-      <Sidebar
+    <div>
+      {/* <Sidebar
         isDarkMode={isDarkMode}
         toggleDarkMode={toggleDarkMode}
         toggleSidebar={toggleSidebar}
@@ -636,9 +663,9 @@ const handleSelectFile = async(selectedItem) => {
         history={limitedHistory}
         sortedHistory={sortedHistory}
         onSelectFile={handleSelectFile}
-      />
+      /> */}
 
-      <button
+      {/* <button
         onClick={toggleSidebar}
         className="md:hidden fixed top-4 right-4 z-50 p-2 py-2 bg-white text-black border rounded-md shadow-md flex items-center justify-center"
       >
@@ -647,67 +674,166 @@ const handleSelectFile = async(selectedItem) => {
         ) : (
           <RiMenu5Line className="w-5 h-5 text-black" /> // Bars icon
         )}
+      </button> */}
+
+{!isEditorVisible && (
+     <div className="relative flex items-center justify-center h-screen bg-white text-gray-800 overflow-hidden p-4 sm:p-8">
+     {/* Full-Screen Background Image */}
+     <div
+       className="absolute inset-0 z-0"
+       style={{
+         backgroundImage: 'url(/assets/generateWorksheet/untitled.png)',
+         backgroundSize: 'cover',
+         backgroundPosition: 'center',
+         backgroundRepeat: 'no-repeat',
+       }}
+     />
+
+     {/* Background Overlay when dropdown is open */}
+     {isHistoryListVisible && (
+       <div
+         onClick={() => setIsHistoryListVisible(false)}
+         className="fixed inset-0 bg-black opacity-50 z-30 sm:hidden"
+       ></div>
+     )}
+
+     {/* Modal for Instructions */}
+     {isInstructModalVisible && (
+       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+         <div
+           className={`p-6 md:p-8 rounded-lg shadow-lg w-[90%] md:w-[800px] max-h-[90vh] overflow-y-auto ${
+             isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-black'
+           }`}
+         >
+           <h2
+             className={`text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center ${
+               isDarkMode ? 'text-gray-100' : 'text-black'
+             }`}
+           >
+             Instructions
+           </h2>
+           <ul className="list-disc pl-6 md:pl-8 space-y-3 md:space-y-4 text-base md:text-lg leading-relaxed text-left">
+             <li>
+               <strong>Step 1:</strong> Click on the &quot;Generate&quot; button, and a form will appear.
+             </li>
+             <li>
+               <strong>Step 2:</strong> Fill out the complete form. Select the subject, grade, and topic from the dropdown, and then choose the template. If you select &quot;default,&quot; you can click on the generate button immediately. If you select &quot;custom,&quot; 10 additional fields will appear. Fill them out, then click &quot;Generate&quot; again. <em>Note:</em> While filling in the 10 additional fields, there is a limit on question type selection: You can choose only three questions each for MCQ and Fill in the Blank, and only two questions each for Short Answer and Match the Following.
+             </li>
+             <li>
+               <strong>Step 3:</strong> After clicking &quot;Generate,&quot; you&apos;ll be taken to the editor where the questions and answers along with the topic, blooms level, difficulty level will be displayed. <em>Note:</em> The preview and close buttons will be disabled until all questions are generated.
+             </li>
+             <li>
+               <strong>Step 4:</strong> Once all the questions are generated, you can edit them as needed.
+             </li>
+             <li>
+               <strong>Step 5:</strong> Then, click on the preview button which will display the preview of your pdf and it will also have a cancel and download button.
+             </li>
+             <li>
+               <strong>Step 6:</strong> Finally, click on download button to generate a pdf with all questions and answers. And in case you want to revert back to the editor and make some changes then you can click on the cancel button.
+             </li>
+           </ul>
+           <div className="flex justify-end mt-4 md:mt-6">
+             <button
+               onClick={closeInstructModal}
+               className="bg-blue-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg shadow hover:bg-blue-600 transition duration-200"
+             >
+               Close
+             </button>
+           </div>
+         </div>
+       </div>
+     )}
+
+     {/* Navigation Links */}
+     <div className="absolute top-6 left-10 flex space-x-8 text-[#274472] font-semibold text-sm z-40">
+       {/* Dropdown Button for History */}
+       <div className="relative">
+         <button
+           onClick={handleExploreHistoryClick}
+           className="bg-white text-#2f4a5f px-4 py-2 rounded-md hover:bg-transparent hover:border-2 hover:border-[#1A3853] hover:text-[#2f4a5f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1A3853]"
+         >
+           HISTORY
+         </button>
+
+         {/* Dropdown List */}
+         {isHistoryListVisible && (
+           <ul className="absolute left-0 top-12 w-screen bg-white border border-gray-300 rounded-md shadow-lg z-50 p-2 sm:w-64 sm:left-auto sm:top-10 sm:p-4">
+             {limitedHistory.length > 0 ? (
+               limitedHistory.map(item => (
+                 <li key={item.id} className="hover:bg-gray-100">
+                   <button
+                     type="button"
+                     onClick={() => handleSelectFile(item)}
+                     className="block w-full text-left px-4 py-2 text-gray-800 text-sm"
+                   >
+                     {`Generated Question - ${formatDate(item.updated_at)}`}
+                   </button>
+                 </li>
+               ))
+             ) : (
+               <li className="text-gray-600 px-4 py-2">No history available.</li>
+             )}
+           </ul>
+         )}
+       </div>
+
+       <button
+           onClick={showInstructModal}
+           className="bg-white text-#2f4a5f px-4 py-2 rounded-md hover:bg-transparent hover:border-2 hover:border-[#1A3853] hover:text-[#2f4a5f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1A3853]"
+         >
+           INFO
+         </button>
+     </div>
+
+     {/* Icon Section */}
+     <div className="absolute top-4 right-4 grid grid-cols-2 gap-2 opacity-10 sm:right-16 sm:gap-4 z-10">
+       <img src="/assets/generateWorksheet/ai-cloud.png" alt="AI Icon" className="w-10 h-10 sm:w-12 sm:h-12" />
+       <img src="/assets/generateWorksheet/ai.png" alt="AI Icon" className="w-10 h-10 sm:w-12 sm:h-12" />
+       <img src="/assets/generateWorksheet/artificial-intelligence.png" alt="AI Icon" className="w-10 h-10 sm:w-12 sm:h-12" />
+       <img src="/assets/generateWorksheet/ai-cloud.png" alt="AI Icon" className="w-10 h-10 sm:w-12 sm:h-12" />
+     </div>
+
+     {/* Main Content Wrapper */}
+     <div className="relative z-10 flex flex-col md:flex-row items-center justify-center mt-1 sm:mt-2">
+       {/* Robot Image for Mobile View */}
+       <div className="flex-shrink-0 md:hidden flex justify-center items-center w-full h-full mb-4">
+         <img
+           src="/assets/generateWorksheet/robot.png"
+           alt="Robot"
+           className="h-[200px] sm:h-[260px] object-contain"
+         />
+       </div>
+
+       {/* Text Section */}
+       <div className="text-center md:text-center md:mr-6 md:flex md:flex-col md:items-center">
+         <h1 className="text-[32px] md:text-[40px] font-bold text-[#4A4A4A] leading-tight">LET’S GENERATE</h1>
+         <h2 className="text-[48px] md:text-[56px] font-extrabold text-[#1A3853] leading-none">WORKSHEET</h2>
+         <br />
+         <p className="text-[#4A4A4A] text-lg md:text-xl">
+          Worksheet classroom activities in a few <br /> clicks using the power of{' '}
+          <span className="font-semibold text-[#1A3853]">
+            CENTA<span className="text-[#318CE7]">i</span>
+          </span>
+        </p>
+         <button 
+        className="mt-4 px-6 py-2 sm:px-8 sm:py-3 bg-[#1A3853] text-white text-lg font-semibold rounded-full hover:bg-[#274472]"
+        onClick={handleGenerateClick} // Trigger the same function as the Generate button
+      >
+        Let’s get started!
       </button>
+       </div>
 
-      {/* Main Content */}
-      {!isEditorVisible &&  (
-      <div className={`flex-1 p-8 md:p-8 flex flex-col ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
-        {/* Logo Section */}
-        <div className="flex justify-center mb-8">
-        <img src="/assets/generateWorksheet/centalogo1.png" alt="Logo" className="h-22 w-60" />
+       {/* Robot Image for Desktop View */}
+       <div className="hidden md:block flex-shrink-0 ml-4">
+          <img
+            src="/assets/generateWorksheet/robot.png"
+            alt="Robot"
+            className="h-[350px] sm:h-[330px] object-contain"
+          />
         </div>
-
-        {/* Icon Section */}
-        <div className="flex flex-wrap justify-between gap-12 mb-24">
-          <div className="flex flex-col items-center mt-4 w-1/4 md:w-auto">
-            <img src="/assets/generateWorksheet/icon1.png" alt="Icon 1" className="h-20 w-20" />
-          </div>
-          <div className="flex flex-col items-center mt-4 w-1/4 md:w-auto">
-            <img src="/assets/generateWorksheet/icon2.png" alt="Icon 2" className="h-20 w-20" />
-          </div>
-          <div className="flex flex-col items-center mt-4 w-1/4 md:w-auto">
-            <img src="/assets/generateWorksheet/icon3.png" alt="Icon 3" className="h-20 w-20" />
-          </div>
-          <div className="flex flex-col items-center mt-4 w-1/4 md:w-auto">
-            <img src="/assets/generateWorksheet/icon4.png" alt="Icon 4" className="h-20 w-20" />
-          </div>
-        </div>
-
-       {/* <div className="flex justify-center items-center">
-        <h1 className="text-2xl italic">Worksheet Generator Powered by CentAi</h1>
-      </div> */}
-
-        {/* Fixed Text Box with Generate Button */}
-        <div className={`flex flex-col md:flex-row items-center p-3 md:py-2 md:px-2 mt-12`}>
-          <button
-            type="button"
-            onClick={handleGenerateClick}
-            className="flex justify-center items-center cursor-pointer h-[35px] sm:h-[52px] rounded-full text-white px-[16px] py-5 sm:px-[16px] text-2xl sm:text-2xl font-bold sm:font-semibold mx-auto"
-            style={{
-              background: 'linear-gradient(to right, #3b82f6, #8b5cf6, #3b82f6)',
-              backgroundSize: '200% auto',
-              animation: 'shine 2s linear infinite',
-            }}
-          >
-             Generate
-            <FaWandSparkles className='ml-2' />
-          </button>
-          <style jsx>{`
-              @keyframes shine {
-                0% {
-                  background-position: 0%;
-                }
-                50% {
-                  background-position: 100%;
-                }
-                100% {
-                  background-position: 0%;
-                  }
-                }
-              `}</style>
-            </div>
-          </div>
-        )}
+     </div>
+   </div>
+  )}
 
       {isEditorVisible && (
         <div className="flex-1 py-16 sm:py-0 px-1">
@@ -744,7 +870,7 @@ const handleSelectFile = async(selectedItem) => {
             >
               {loading ? (
               <>
-                <ImSpinner9 spin className="mr-2 animate-spin" />
+                <ImSpinner9 spin="true" className="mr-2 animate-spin" />
               </>
             ) : (
               <>

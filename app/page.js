@@ -813,7 +813,8 @@ import { redirect } from 'next/navigation';
 
 export default function Home() {
   // Redirect the user to /generateworksheet when they visit /
+  const userId = "971944d1-31ea-4442-aea5-d71533ac3953";
   console.log("Redirecting to GenerateWorksheet");
-  redirect('/GenerateWorksheet');
+  redirect(`/GenerateWorksheet/${userId}`);
   return null;
 }
