@@ -830,7 +830,7 @@ const LandingPage = () => {
       )}
 
       {isEditorVisible && (
-        <div className="flex-1 py-16 sm:py-0 px-1 bg-white">
+        <div className="flex-1 py-4 sm:py-0 px-1 bg-white">
           <div className={`relative flex-1 overflow-auto rounded-lg p-2 max-h-[calc(100vh-40px)] ${isEditorDisabled ? 'editor-disabled' : ''}`}>
             <SunEditor
               setContents={content}
