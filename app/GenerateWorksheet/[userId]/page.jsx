@@ -35,7 +35,6 @@ const LandingPage = () => {
   const [isInstructModalVisible, setIsInstructModalVisible] = useState(false); // State for modal visibility
   // const userId = "971944d1-31ea-4442-aea5-d71533ac3953"
   const [selectedFileIndex, setSelectedFileIndex] = useState(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date))// New state for typing simulation
   const filteredHistory = history.filter(item => item.content);
   const limitedHistory = sortedHistory.slice(0, 5);
@@ -134,13 +133,6 @@ const LandingPage = () => {
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  const toggleDarkMode = () => {
-    // const newDarkMode = !isDarkMode;
-    // setIsDarkMode(newDarkMode);
-    // Optionally, you could store this in localStorage if you want to preserve the setting across sessions
-    // localStorage.setItem('isDarkMode', newDarkMode.toString());
   };
 
   const handleGenerate = useCallback(async (responseData, questionId) => {
@@ -705,11 +697,11 @@ const LandingPage = () => {
           {isInstructModalVisible && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
               <div
-                className={`p-6 md:p-8 rounded-lg shadow-lg w-[90%] md:w-[800px] max-h-[90vh] overflow-y-auto ${isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-black'
+                className={`p-6 md:p-8 rounded-lg shadow-lg w-[90%] md:w-[800px] max-h-[90vh] overflow-y-auto bg-white text-black
                   }`}
               >
                 <h2
-                  className={`text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center ${isDarkMode ? 'text-gray-100' : 'text-black'
+                  className={`text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-black
                     }`}
                 >
                   Instructions
@@ -848,11 +840,11 @@ const LandingPage = () => {
                 buttonList: [['subscript', 'superscript']],
                 resizingBar: false,
               }}
-              setDefaultStyle={`font-size: 16px; line-height: 1.5; background-color: ${isEditorDisabled ? (isDarkMode ? '#111827' : '#ffffff') : (isDarkMode ? '#111827' : '#ffffff')}; color: ${isEditorDisabled ? (isDarkMode ? '#d3d3d3' : '#000000') : (isDarkMode ? '#d3d3d3' : '#000000')};`}
+              setDefaultStyle={`font-size: 16px; line-height: 1.5; background-color: ${isEditorDisabled ? '#ffffff' : '#ffffff'}; color: ${isEditorDisabled ? '#000000' : '#000000'};`}
               className="custom-editor h-full"
             />
             {isEditorDisabled && (
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-gray-900' : 'bg-white'} opacity-0 z-20`} />
+              <div className={`absolute inset-0 bg-white opacity-0 z-20`} />
             )}
             <div ref={contentRef} />
             <div className="absolute top-4 right-4 md:top-3 md:right-8 z-30 bg-white rounded-md flex space-x-2">
@@ -897,7 +889,7 @@ const LandingPage = () => {
               /* Webkit browsers */
               .custom-editor .sun-editor-editable::-webkit-scrollbar-track {
                 -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-                background-color: ${isDarkMode ? '#2d2d2d' : '#f5f5f5'};
+                background-color: #f5f5f5;
               }
 
               .custom-editor .sun-editor-editable::-webkit-scrollbar {
@@ -905,13 +897,13 @@ const LandingPage = () => {
               }
 
               .custom-editor .sun-editor-editable::-webkit-scrollbar-thumb {
-                background-color: ${isDarkMode ? '#555' : '#888'} !important;
+                background-color: #888 !important;
                 border-radius: 10px;
               }
 
               /* Firefox */
               .custom-editor .sun-editor-editable {
-                scrollbar-color: ${isDarkMode ? '#555' : '#888'} ${isDarkMode ? '#2d2d2d' : '#f5f5f5'};
+                scrollbar-color: #888 #f5f5f5;
                 scrollbar-width: thin;
               }
             `}</style>
