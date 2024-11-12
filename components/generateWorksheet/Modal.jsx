@@ -256,6 +256,7 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
 
       const responseData = await response.json();
       console.log(responseData,"resp");
+      console.log("useid is this",userId);
 
       const questionsArray = responseData?.content?.airesponse || responseData?.content?.response || [];
 
