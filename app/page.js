@@ -809,12 +809,23 @@
 // export default LandingPage;
 
 
-import { redirect } from 'next/navigation';
+'use client'; // Ensures this code runs only in the browser
+
+import { useEffect } from 'react';
 
 export default function Home() {
-  // Redirect the user to /generateworksheet when they visit /
-  const userId = "971944d1-31ea-4442-aea5-d71533ac3953";
-  console.log("Redirecting to GenerateWorksheet");
-  redirect(`/GenerateWorksheet/${userId}`);
-  return null;
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId'); // Get the 'userId' from the query string
+    console.log("user id is this", userId)
+
+    // Always redirect to /GenerateWorksheet/{userId}, whether the userId is found or not
+    if(userId){
+    window.location.href = `/GenerateWorksheet/${userId}`;
+    }
+  }, []); // Empty dependency array to run the effect only once when mounted
+
+  return null; // Render nothing as this component is only for redirection
 }
+
+

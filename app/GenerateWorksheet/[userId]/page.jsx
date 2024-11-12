@@ -16,7 +16,6 @@ import html2canvas from 'html2canvas';
 import { fetchHistory, insertHistory, fetchUsers, updateQuestionDetails, fetchSubjectAndGradeFromQuestionID, fetchSubjectById, fetchGradeById } from '../../../components/generateWorksheet/Query';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-
 const LandingPage = () => {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -68,13 +67,11 @@ const LandingPage = () => {
     }, interval);
   }, []);
 
-
   useEffect(() => {
     if (contentRef.current) {
       contentRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
     }
   }, [content]);
-
 
   useEffect(() => {
     // Only fetch history if userId is set and valid
@@ -118,7 +115,6 @@ const LandingPage = () => {
     setIsInstructModalVisible(false);
   };
 
-
   const handleGenerateClick = () => {
     setIsModalOpen(true);
   };
@@ -131,9 +127,9 @@ const LandingPage = () => {
     setTemplate(event.target.value);
   };
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  // const toggleSidebar = () => {
+  //   setIsSidebarOpen(!isSidebarOpen);
+  // };
 
   const handleGenerate = useCallback(async (responseData, questionId) => {
     setIsModalOpen(false); // Close the modal
@@ -223,7 +219,6 @@ const LandingPage = () => {
 
   }, [simulateTyping, updateQuestionDetails, userId]);
 
-
   const handleSelectFile = async (selectedItem) => {
     if (selectedItem) {
 
@@ -244,6 +239,7 @@ const LandingPage = () => {
 
         // Group the questions (if necessary)
         const groupedQuestions = {
+
           mcq: [],
           fillInTheBlank: [],
           match: [],
@@ -287,7 +283,6 @@ const LandingPage = () => {
       console.error("No item selected");
     }
   };
-
 
   const handlePrepareDownload = (subject, grade, questions) => {
     setPdfDetails({ subject, grade });
@@ -386,7 +381,6 @@ const LandingPage = () => {
     return extractedAnswers;
   };
 
-
   const processQuestionsArray = (questionsArray, editorQuestions, editorAnswers) => {
     const objectiveQuestions = [];
     const matchQuestions = [];
@@ -429,7 +423,6 @@ const LandingPage = () => {
 
     return { objectiveQuestions, answers, matchQuestions, shortAnswerQuestions };
   };
-
 
   const printReport = () => {
     const uuid = generateUUID(); // Generate UUID for both questions and answers
@@ -505,10 +498,10 @@ const LandingPage = () => {
             ${matchQuestions.length > 0 ? `
               <h3 class="text-xl font-semibold mt-4 mb-2">Match the Following Questions:</h3>
               ${matchQuestions.map((question, index) => {
-      const introText = question.split(' - ')[0];
-      const leftLabelsMatch = question.match(/Left labels:\s*[\[\{](.*?)[\]\}]/);
-      const rightLabelsMatch = question.match(/Right labels:\s*[\[\{](.*?)[\]\}]/);
-      return `
+                  const introText = question.split(' - ')[0];
+                  const leftLabelsMatch = question.match(/Left labels:\s*[\[\{](.*?)[\]\}]/);
+                  const rightLabelsMatch = question.match(/Right labels:\s*[\[\{](.*?)[\]\}]/);
+                  return `
                   <h4 class="mt-2">${objectiveQuestions.length + index + 1}. ${introText}</h4>
                   <table class="w-full mt-3 border-collapse">
                     <thead>
@@ -519,20 +512,20 @@ const LandingPage = () => {
                     </thead>
                     <tbody>
                       ${leftLabelsMatch && rightLabelsMatch ? (() => {
-          const leftLabels = leftLabelsMatch[1].match(/"(.*?)"(?=\s*,|\s*$)/g).map(label => label.replace(/"/g, '').trim());
-          const rightLabels = rightLabelsMatch[1].match(/"(.*?)"(?=\s*,|\s*$)/g).map(label => label.replace(/"/g, '').trim());
+                        const leftLabels = leftLabelsMatch[1].match(/"(.*?)"(?=\s*,|\s*$)/g).map(label => label.replace(/"/g, '').trim());
+                        const rightLabels = rightLabelsMatch[1].match(/"(.*?)"(?=\s*,|\s*$)/g).map(label => label.replace(/"/g, '').trim());
 
-          return leftLabels.map((leftLabel, index) => `
+                        return leftLabels.map((leftLabel, index) => `
                           <tr>
                             <td class="border px-4 py-2">${leftLabel}</td>
                             <td class="border px-4 py-2">${rightLabels[index] || 'N/A'}</td>
                           </tr>
                         `).join('');
-        })() : ''}
+                       })() : ''}
                     </tbody>
                   </table>
                 `;
-    }).join('')}
+               }).join('')}
             ` : ''}
     
             ${shortAnswerQuestions.length > 0 ? `

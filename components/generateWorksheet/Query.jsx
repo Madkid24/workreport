@@ -144,7 +144,6 @@ export const fetchSubjects = async () => {
 //   }
 // };
 
-
 export const updateQuestionDetails = async (id, content) => {
   const mutation = gql`
     mutation UpdateQuestionDetails($id: uuid!, $content: String!) {
@@ -225,5 +224,3 @@ export const fetchGradeById = async (gradeId) => {
     return null; // Return null in case of an error
   }
 };
-
-

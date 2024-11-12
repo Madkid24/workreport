@@ -4,8 +4,6 @@ import React, { useState, useEffect } from 'react';
 import AlertBox from './AlertBox';
 import { fetchGrades, fetchSubjects, fetchTopics } from './Query';
 
-
-
 const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateChange, onPrepareDownload, onUpdateSubjectAndGrade, userId }) => {
   const [subject, setSubject] = useState('');
   const [subjects, setSubjects] = useState([]);
@@ -31,7 +29,6 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
   const MAX_MCQ_FITB = 3; // Maximum for MCQ and Fill in the blank
   const MAX_SHORT_MATCH = 2; // Maximum for Short answer and Match the following
 
-
   if (!isOpen) return null;
 
   const countQuestionTypes = (questionDetails) => {
@@ -53,8 +50,6 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
   };
 
   const { fitb, mcq, short, match } = countQuestionTypes(questionDetails);
-
-  
 
   const handleSubjectChange = async (e) => {
     const selectedSubject = e.target.value;
@@ -114,7 +109,6 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
     }
   };
   
-
   const getSubjects = async () => {
     try {
       const fetchedSubjects = await fetchSubjects();
@@ -160,7 +154,6 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       getGrades();
     }
   };
-
 
   if (isOpen) {
     handleModalOpen(); // Fetch subjects when the modal is open
@@ -243,7 +236,6 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       workSheetDetails,
     };
 
-
     try {
       const aiAuthToken = process.env.NEXT_PUBLIC_AI_AUTH_TOKEN;
       console.log(process.env.NEXT_PUBLIC_BASE_URL, 'base url')
@@ -284,7 +276,6 @@ const Modal = ({ isOpen, handleClose, handleGenerate, template, handleTemplateCh
       setLoading(false);
     }
   };
-
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75 z-50 p-4">
