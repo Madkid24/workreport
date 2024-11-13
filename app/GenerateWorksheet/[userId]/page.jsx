@@ -50,7 +50,7 @@ const LandingPage = () => {
     }
   }, [extractedUserId]);
 
-  const simulateTyping = useCallback((text, interval = 30) => {
+  const simulateTyping = useCallback((text, interval = 10) => {
     let index = 0;
     setIsEditorDisabled(true); // Disable editor before typing starts
     const typingInterval = setInterval(() => {
